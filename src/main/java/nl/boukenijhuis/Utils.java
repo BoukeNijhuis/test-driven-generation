@@ -48,14 +48,12 @@ public class Utils {
     }
 
 
-    public static void addToClassLoader(Path inputFile) throws MalformedURLException {
-        // add the compiled files to the classpath
+    // add the compiled files to the classpath
+    public static void addToClassLoader(Path parentDirectory) throws MalformedURLException {
         ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
 
         // Use currentClassLoader as parent, so we extend instead of replace
-        // TODO this only works for single directory packages!!!
-        File parentDirectory = inputFile.getParent().getParent().toFile();
-        URL[] urls = {parentDirectory.toURL()};
+        URL[] urls = {parentDirectory.toFile().toURL()};
         ClassLoader newClassLoader = URLClassLoader.newInstance(urls, currentClassLoader);
 
         // set the new classloader as the current classloader

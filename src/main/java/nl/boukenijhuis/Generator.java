@@ -44,8 +44,8 @@ public class Generator {
         // compile the solution file and the test source file
         compileFiles(solutionFilePath, destinationFilePath);
 
-        // add compiled Java file to class loader
-        addToClassLoader(solutionFilePath);
+        // add all compiled Java files to class loader
+        addToClassLoader(inputContainer.getOutputDirectory());
 
         // run the test
         TestRunner.TestInfo testInfo = testRunner.runTestFile(inputContainer);
