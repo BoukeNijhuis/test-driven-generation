@@ -20,8 +20,13 @@ import java.util.List;
 public class Utils {
 
     public static Path createTemporaryFile(InputContainer inputContainer, CodeContainer response) throws IOException {
-        Path tempPackageDirectory = inputContainer.getOutputDirectory().resolve(response.getPackageName());
-        Files.createDirectory(tempPackageDirectory);
+
+        Path tempPackageDirectory = inputContainer.getOutputDirectory();
+        // create package folder if necessary
+        if (!response.getPackageName().isEmpty()) {
+            tempPackageDirectory = tempPackageDirectory.resolve(response.getPackageName());
+            Files.createDirectory(tempPackageDirectory);
+        }
         Path tempFile = tempPackageDirectory.resolve(response.fileName());
         Files.createFile(tempFile);
         Files.writeString(tempFile, response.content());

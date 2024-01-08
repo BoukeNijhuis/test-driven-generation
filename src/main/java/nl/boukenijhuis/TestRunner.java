@@ -7,7 +7,9 @@ import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 
-import static org.junit.platform.engine.discovery.DiscoverySelectors.selectPackage;
+import java.util.Collections;
+
+import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClasspathRoots;
 
 public class TestRunner {
 
@@ -16,9 +18,8 @@ public class TestRunner {
     private TestInfo latestTestInfo = null;
 
     public TestInfo runTestFile(InputContainer inputContainer) {
-        String testClassName = inputContainer.getInputFile().getFileName().toString().replace(".java", "");
         LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
-                .selectors(selectPackage(inputContainer.getPackageName()))
+                .selectors(selectClasspathRoots(Collections.singleton(inputContainer.getOutputDirectory())))
                 .build();
         Launcher launcher = LauncherFactory.create();
         launcher.registerTestExecutionListeners(listener);

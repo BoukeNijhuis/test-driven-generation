@@ -1,9 +1,7 @@
-package example;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class PrimeNumberGenerator {
+public class PrimeNumberGeneratorWithoutPackage {
 
     public List<Integer> generate(int limit) {
         List<Integer> primeNumbers = new ArrayList<>();

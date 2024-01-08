@@ -30,10 +30,10 @@ public class Generator {
         // sanitize and provide default inputs
         InputContainer inputContainer = InputContainer.build(args);
 
-        // get filename and content
+        // get solution filename and content
         CodeContainer codeContainer = callAssistant(assistant, inputContainer);
 
-        // create the file in the temp directory
+        // create the solution file in the temp directory
         Path solutionFilePath = createTemporaryFile(inputContainer, codeContainer);
 
         // copy the test file to the temp directory

@@ -12,23 +12,35 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GeneratorIT extends IntegrationTest {
 
-    String outputFileName = "PrimeNumberGenerator.java";
-    String outputFileContent;
+    @Test
+    public void happyFlowWithPackage() throws IOException {
+        String packageName = "example";
+        String inputFile = "src/test/resources/input/PrimeNumberGeneratorTest.java";
+        String outputFileName = "PrimeNumberGenerator.java";
+        String outputFileContent = readFile("expected/PrimeNumberGenerator.java");
 
-    // TODO create test without packages
+        happyFlow(packageName, inputFile, outputFileName, outputFileContent);
+    }
 
     @Test
-    public void happyFlow() throws IOException {
-        outputFileContent = readFile("expected/PrimeNumberGenerator.java");
+    public void happyFlowWithoutPackage() throws IOException {
 
+        String packageName = "";
+        String inputFile = "src/test/resources/input/PrimeNumberGeneratorTestWithoutPackage.java";
+        String outputFileName = "PrimeNumberGeneratorWithoutPackage.java";
+        String outputFileContent = readFile("expected/PrimeNumberGeneratorWithoutPackage.java");
+
+        happyFlow(packageName, inputFile, outputFileName, outputFileContent);
+    }
+
+    public void happyFlow(String packageName, String inputFile, String outputFileName, String outputFileContent) throws IOException {
         Path tempDirectory = Files.createTempDirectory("test");
-        String inputFile = "src/test/resources/input/PrimeNumberGeneratorTest.java";
         String[] args = {inputFile, tempDirectory.toString()};
         TestRunner testRunner = new TestRunner();
-        new Generator().run(new ChatGptTest(), testRunner, args);
+        new Generator().run(new ChatGptTest(outputFileName, outputFileContent), testRunner, args);
 
         // check if the file is created with correct content
-        Path outputFilePath = tempDirectory.resolve("input").resolve(outputFileName);
+        Path outputFilePath = tempDirectory.resolve(packageName).resolve(outputFileName);
         assertTrue(Files.isRegularFile(outputFilePath));
         assertEquals(outputFileContent, Files.readString(outputFilePath));
 
@@ -38,7 +50,7 @@ class GeneratorIT extends IntegrationTest {
         assertEquals(1, latestTestInfo.succeeded());
     }
 
-    class ChatGptTest implements AIAssistant {
+    record ChatGptTest(String outputFileName, String outputFileContent) implements AIAssistant {
 
         @Override
         public CodeContainer call(Path testFile) {
