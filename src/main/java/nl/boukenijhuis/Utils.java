@@ -1,6 +1,6 @@
 package nl.boukenijhuis;
 
-import nl.boukenijhuis.dto.FileNameContent;
+import nl.boukenijhuis.dto.CodeContainer;
 import nl.boukenijhuis.dto.InputContainer;
 
 import javax.tools.JavaCompiler;
@@ -19,8 +19,10 @@ import java.util.List;
 
 public class Utils {
 
-    public static Path createTemporaryFile(InputContainer inputContainer, FileNameContent response) throws IOException {
-        Path tempFile = inputContainer.getOutputDirectory().resolve(response.fileName());
+    public static Path createTemporaryFile(InputContainer inputContainer, CodeContainer response) throws IOException {
+        Path tempPackageDirectory = inputContainer.getOutputDirectory().resolve(response.getPackageName());
+        Files.createDirectory(tempPackageDirectory);
+        Path tempFile = tempPackageDirectory.resolve(response.fileName());
         Files.createFile(tempFile);
         Files.writeString(tempFile, response.content());
         return tempFile;
@@ -35,12 +37,24 @@ public class Utils {
         fileManager.close();
     }
 
+    public static void compileFilesInDirectory(Path directory) throws IOException {
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
+
+        Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromPaths(directory);
+
+        compiler.getTask(null, fileManager, null, null, null, compilationUnits).call();
+        fileManager.close();
+    }
+
+
     public static void addToClassLoader(Path inputFile) throws MalformedURLException {
         // add the compiled files to the classpath
         ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
 
         // Use currentClassLoader as parent, so we extend instead of replace
-        File parentDirectory = inputFile.getParent().toFile();
+        // TODO this only works for single directory packages!!!
+        File parentDirectory = inputFile.getParent().getParent().toFile();
         URL[] urls = {parentDirectory.toURL()};
         ClassLoader newClassLoader = URLClassLoader.newInstance(urls, currentClassLoader);
 

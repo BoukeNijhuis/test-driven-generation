@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.boukenijhuis.dto.ChatGptRequest;
 import nl.boukenijhuis.dto.ChatGptResponse;
-import nl.boukenijhuis.dto.FileNameContent;
+import nl.boukenijhuis.dto.CodeContainer;
 
 import java.io.IOException;
 import java.net.URI;
@@ -27,7 +27,7 @@ public class ChatGpt implements AIAssistant {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final HttpClient client = HttpClient.newHttpClient();
 
-    public FileNameContent call(Path testFile) throws IOException, InterruptedException {
+    public CodeContainer call(Path testFile) throws IOException, InterruptedException {
 
         String prompt = "Implement the class under test. %n%n%s";
         String promptWithFile = String.format(prompt, readFile(testFile));
@@ -43,7 +43,7 @@ public class ChatGpt implements AIAssistant {
                 javaContent = extractJavaContent(content);
                 attempts++;
             }
-            return new FileNameContent(extractFileName(testFile), javaContent, attempts);
+            return new CodeContainer(extractFileName(testFile), javaContent, attempts);
         } catch (IOException | InterruptedException e) {
             throw e;
         }

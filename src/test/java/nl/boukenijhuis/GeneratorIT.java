@@ -1,6 +1,6 @@
 package nl.boukenijhuis;
 
-import nl.boukenijhuis.dto.FileNameContent;
+import nl.boukenijhuis.dto.CodeContainer;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -15,8 +15,10 @@ class GeneratorIT extends IntegrationTest {
     String outputFileName = "PrimeNumberGenerator.java";
     String outputFileContent;
 
+    // TODO create test without packages
+
     @Test
-    public void startUp() throws IOException {
+    public void happyFlow() throws IOException {
         outputFileContent = readFile("expected/PrimeNumberGenerator.java");
 
         Path tempDirectory = Files.createTempDirectory("test");
@@ -26,7 +28,7 @@ class GeneratorIT extends IntegrationTest {
         new Generator().run(new ChatGptTest(), testRunner, args);
 
         // check if the file is created with correct content
-        Path outputFilePath = tempDirectory.resolve(outputFileName);
+        Path outputFilePath = tempDirectory.resolve("input").resolve(outputFileName);
         assertTrue(Files.isRegularFile(outputFilePath));
         assertEquals(outputFileContent, Files.readString(outputFilePath));
 
@@ -39,8 +41,8 @@ class GeneratorIT extends IntegrationTest {
     class ChatGptTest implements AIAssistant {
 
         @Override
-        public FileNameContent call(Path testFile) {
-            return new FileNameContent(outputFileName, outputFileContent);
+        public CodeContainer call(Path testFile) {
+            return new CodeContainer(outputFileName, outputFileContent);
         }
     }
 

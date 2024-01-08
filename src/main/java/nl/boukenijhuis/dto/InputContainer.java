@@ -53,4 +53,9 @@ public final class InputContainer {
     public Path getOutputDirectory() {
         return outputDirectory;
     }
+
+    public String getPackageName() {
+        // TODO implement properly (cannot use the readFile from IntegrationTest, because that one reads from resources)
+        return "input";
+    }
 }

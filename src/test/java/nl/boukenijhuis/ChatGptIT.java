@@ -2,7 +2,7 @@ package nl.boukenijhuis;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
-import nl.boukenijhuis.dto.FileNameContent;
+import nl.boukenijhuis.dto.CodeContainer;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -32,12 +32,12 @@ public class ChatGptIT extends IntegrationTest {
         stubFor(post("/v1/chat/completions")
                 .inScenario(RETRY_SCENARIO)
                 .whenScenarioStateIs(SECOND_REPLY)
-                .willReturn(ok(readFile("stub/stub_with_code.json"))));
+                .willReturn(ok(readFile("stub/stub_with_working_code.json"))));
 
         ChatGpt chatGpt = new ChatGpt();
         chatGpt.setServer("http://localhost:8089");
 
-        FileNameContent response = chatGpt.call(Path.of("src", "test", "resources", "input", "PrimeNumberGeneratorTest.java"));
+        CodeContainer response = chatGpt.call(Path.of("src", "test", "resources", "input", "PrimeNumberGeneratorTest.java"));
         assertEquals(readFile("expected/PrimeNumberGenerator.java"), response.content());
         assertEquals("PrimeNumberGenerator.java", response.fileName());
         assertEquals(2, response.attempts());

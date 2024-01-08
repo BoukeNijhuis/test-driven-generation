@@ -1,6 +1,6 @@
 package nl.boukenijhuis;
 
-import nl.boukenijhuis.dto.FileNameContent;
+import nl.boukenijhuis.dto.CodeContainer;
 import nl.boukenijhuis.dto.InputContainer;
 
 import java.io.IOException;
@@ -31,36 +31,36 @@ public class Generator {
         InputContainer inputContainer = InputContainer.build(args);
 
         // get filename and content
-        FileNameContent response = callAssistant(assistant, inputContainer);
+        CodeContainer codeContainer = callAssistant(assistant, inputContainer);
 
         // create the file in the temp directory
-        Path tempFile = createTemporaryFile(inputContainer, response);
+        Path solutionFilePath = createTemporaryFile(inputContainer, codeContainer);
 
         // copy the test file to the temp directory
-        Path testFileName = inputContainer.getInputFile().getFileName();
-        Path destinationFilePath = inputContainer.getOutputDirectory().resolve(testFileName);
+        Path testFileNamePath = inputContainer.getInputFile().getFileName();
+        Path destinationFilePath = inputContainer.getOutputDirectory().resolve(codeContainer.getPackageName()).resolve(testFileNamePath);
         Files.copy(inputContainer.getInputFile(), destinationFilePath);
 
-        // compile the temp file and the test source file
-        compileFiles(tempFile, destinationFilePath);
+        // compile the solution file and the test source file
+        compileFiles(solutionFilePath, destinationFilePath);
 
-        // add compiled files to class loader
-        addToClassLoader(tempFile);
+        // add compiled Java file to class loader
+        addToClassLoader(solutionFilePath);
 
         // run the test
         TestRunner.TestInfo testInfo = testRunner.runTestFile(inputContainer);
         String format = String.format("Found: %d, succeeded: %d", testInfo.found(), testInfo.succeeded());
         System.out.println(format);
 
-        // if red provide the error to the AI assistant (and get new content)
+        // if failing tests, provide the error to the AI assistant (and get new content)
 
-        // if green stop
+        // if successful test, stop
     }
 
 
 
-    private static FileNameContent callAssistant(AIAssistant assistant, InputContainer inputContainer) {
-        FileNameContent response;
+    private static CodeContainer callAssistant(AIAssistant assistant, InputContainer inputContainer) {
+        CodeContainer response;
         try {
             response = assistant.call(inputContainer.getInputFile());
         } catch (IOException | InterruptedException e) {
