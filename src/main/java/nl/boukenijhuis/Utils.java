@@ -59,4 +59,20 @@ public class Utils {
         // set the new classloader as the current classloader
         Thread.currentThread().setContextClassLoader(newClassLoader);
     }
+
+    // find the package name in source code
+    public static String getPackageName(String sourceCode) {
+        String searchString = "package ";
+        int packageStart = sourceCode.indexOf(searchString);
+        String packageName = "";
+
+        // there is a package
+        if (packageStart >= 0) {
+            int packageEnd = sourceCode.indexOf(";", packageStart);
+            packageName = sourceCode.substring(packageStart + searchString.length(), packageEnd);
+        }
+
+        return packageName;
+
+    }
 }

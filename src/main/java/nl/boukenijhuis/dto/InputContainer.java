@@ -1,5 +1,7 @@
 package nl.boukenijhuis.dto;
 
+import nl.boukenijhuis.Utils;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -7,10 +9,12 @@ import java.nio.file.Path;
 public final class InputContainer {
     private final Path inputFile;
     private final Path outputDirectory;
+    private final String packageName;
 
-    private InputContainer(Path inputFile, Path outputDirectory) {
+    private InputContainer(Path inputFile, Path outputDirectory, String packageName) {
         this.inputFile = inputFile;
         this.outputDirectory = outputDirectory;
+        this.packageName = packageName;
     }
 
     public static InputContainer build(String[] args) throws IOException {
@@ -25,6 +29,11 @@ public final class InputContainer {
             throw new RuntimeException(args[0] + " is not a file.");
         }
 
+        // extract the package name
+        // TODO Files.readLines() is probably more efficient
+        String inputFileContent = Files.readString(inputFile);
+        String packageName = Utils.getPackageName(inputFileContent);
+
         // check / create the output directory
         Path outputDirectory;
         if (args.length == 2) {
@@ -38,7 +47,7 @@ public final class InputContainer {
             outputDirectory = Files.createTempDirectory("bouke");
         }
 
-        return new InputContainer(inputFile, outputDirectory);
+        return new InputContainer(inputFile, outputDirectory, packageName);
     }
 
     private static boolean isAnEmptyDirectory(Path path) throws IOException {
@@ -55,7 +64,6 @@ public final class InputContainer {
     }
 
     public String getPackageName() {
-        // TODO implement properly (cannot use the readFile from IntegrationTest, because that one reads from resources)
-        return "input";
+        return packageName;
     }
 }
