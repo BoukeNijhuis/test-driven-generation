@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Properties;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -34,8 +35,12 @@ public class ChatGptIT extends IntegrationTest {
                 .whenScenarioStateIs(SECOND_REPLY)
                 .willReturn(ok(readFile("stub/stub_with_working_code.json"))));
 
-        ChatGpt chatGpt = new ChatGpt();
-        chatGpt.setServer("http://localhost:8089");
+        Properties properties = new Properties();
+        properties.setProperty("chatgpt.server", "http://localhost:8089");
+        properties.setProperty("chatgpt.url", "/v1/chat/completions");
+        properties.setProperty("chatgpt.maxTokens", "600");
+        properties.setProperty("chatgpt.apiKey", "apiKey");
+        ChatGpt chatGpt = new ChatGpt(properties);
 
         CodeContainer response = chatGpt.call(Path.of("src", "test", "resources", "input", "PrimeNumberGeneratorTest.java"));
         assertEquals(readFile("expected/PrimeNumberGenerator.java"), response.content());

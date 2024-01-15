@@ -9,11 +9,13 @@ public record ChatGptResponse(
         long created,
         String model,
         List<Choice> choices,
-        Usage usage
+        Usage usage,
+        String system_fingerprint
 ) {
     public record Choice(
             int index,
             Message message,
+            String logprobs,
             String finish_reason) {
     }
 

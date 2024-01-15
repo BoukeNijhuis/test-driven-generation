@@ -6,18 +6,23 @@ import nl.boukenijhuis.dto.InputContainer;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Properties;
 
 import static nl.boukenijhuis.Utils.addToClassLoader;
 import static nl.boukenijhuis.Utils.compileFiles;
 import static nl.boukenijhuis.Utils.createTemporaryFile;
 
-
+// TODO rename project to test-driven-generator?
 public class Generator {
 
     public static void main(String[] args) {
         try {
+            // read the properties
+            Properties properties = new Properties();
+            properties.load(Generator.class.getResourceAsStream("/test-driven-generation.properties"));
+
             // start a generator and inject an AI assistant
-            new Generator().run(new ChatGpt(), new TestRunner(), args);
+            new Generator().run(new ChatGpt(properties), new TestRunner(), args);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
