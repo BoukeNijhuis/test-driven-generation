@@ -38,7 +38,8 @@ public class Generator {
 
         // copy the test file to the temp directory
         Path testFileNamePath = inputContainer.getInputFile().getFileName();
-        Path destinationFilePath = inputContainer.getOutputDirectory().resolve(codeContainer.getPackageName()).resolve(testFileNamePath);
+        String packageDirectories = codeContainer.getPackageName().replace(".", "/");
+        Path destinationFilePath = inputContainer.getOutputDirectory().resolve(packageDirectories).resolve(testFileNamePath);
         Files.copy(inputContainer.getInputFile(), destinationFilePath);
 
         // compile the solution file and the test source file

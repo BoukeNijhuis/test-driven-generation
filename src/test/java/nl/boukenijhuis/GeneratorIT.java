@@ -13,22 +13,33 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class GeneratorIT extends IntegrationTest {
 
     @Test
-    public void happyFlowWithPackage() throws IOException {
-        String packageName = "example";
-        String inputFile = "src/test/resources/input/PrimeNumberGeneratorTest.java";
-        String outputFileName = "PrimeNumberGenerator.java";
-        String outputFileContent = readFile("expected/PrimeNumberGenerator.java");
-
-        happyFlow(packageName, inputFile, outputFileName, outputFileContent);
-    }
-
-    @Test
     public void happyFlowWithoutPackage() throws IOException {
 
         String packageName = "";
         String inputFile = "src/test/resources/input/PrimeNumberGeneratorTestWithoutPackage.java";
         String outputFileName = "PrimeNumberGeneratorWithoutPackage.java";
-        String outputFileContent = readFile("expected/PrimeNumberGeneratorWithoutPackage.java");
+        String outputFileContent = readFile("expected/" + outputFileName);
+
+        happyFlow(packageName, inputFile, outputFileName, outputFileContent);
+    }
+
+    // TODO rename files to "WithSingleLevelPackage"
+    @Test
+    public void happyFlowWithSinglePackage() throws IOException {
+        String packageName = "example";
+        String inputFile = "src/test/resources/input/PrimeNumberGeneratorTest.java";
+        String outputFileName = "PrimeNumberGenerator.java";
+        String outputFileContent = readFile("expected/" + outputFileName);
+
+        happyFlow(packageName, inputFile, outputFileName, outputFileContent);
+    }
+
+    @Test
+    public void happyFlowWithMultipleLevelPackage() throws IOException {
+        String packageName = "com.example";
+        String inputFile = "src/test/resources/input/PrimeNumberGeneratorTestWithMultipleLevelPackage.java";
+        String outputFileName = "PrimeNumberGeneratorWithMultipleLevelPackage.java";
+        String outputFileContent = readFile("expected/" + outputFileName);
 
         happyFlow(packageName, inputFile, outputFileName, outputFileContent);
     }
@@ -40,7 +51,8 @@ class GeneratorIT extends IntegrationTest {
         new Generator().run(new ChatGptTest(outputFileName, outputFileContent), testRunner, args);
 
         // check if the file is created with correct content
-        Path outputFilePath = tempDirectory.resolve(packageName).resolve(outputFileName);
+        String packageDirectories = packageName.replace(".", "/");
+        Path outputFilePath = tempDirectory.resolve(packageDirectories).resolve(outputFileName);
         assertTrue(Files.isRegularFile(outputFilePath));
         assertEquals(outputFileContent, Files.readString(outputFilePath));
 

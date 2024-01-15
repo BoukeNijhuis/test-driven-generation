@@ -16,21 +16,36 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringTokenizer;
 
 public class Utils {
 
     public static Path createTemporaryFile(InputContainer inputContainer, CodeContainer response) throws IOException {
-
         Path tempPackageDirectory = inputContainer.getOutputDirectory();
-        // create package folder if necessary
-        if (!response.getPackageName().isEmpty()) {
-            tempPackageDirectory = tempPackageDirectory.resolve(response.getPackageName());
-            Files.createDirectory(tempPackageDirectory);
-        }
+        tempPackageDirectory = createPackageDirectories(response.getPackageName(), tempPackageDirectory);
         Path tempFile = tempPackageDirectory.resolve(response.fileName());
         Files.createFile(tempFile);
         Files.writeString(tempFile, response.content());
         return tempFile;
+    }
+
+    /**
+     * Create directories corresponding to the package name.
+     * @param packageName a period seperated String with the directories to create
+     * @param tempPackageDirectory the directory where the new directories should be created
+     * @return the last created directory
+     * @throws IOException
+     */
+    private static Path createPackageDirectories(String packageName, Path tempPackageDirectory) throws IOException {
+        if (!packageName.isEmpty()) {
+            StringTokenizer stringTokenizer = new StringTokenizer(packageName, ".");
+            do {
+                String directory = stringTokenizer.nextToken();
+                tempPackageDirectory = tempPackageDirectory.resolve(directory);
+                Files.createDirectory(tempPackageDirectory);
+            } while (stringTokenizer.hasMoreTokens());
+        }
+        return tempPackageDirectory;
     }
 
     public static void compileFiles(Path... pathArray) throws IOException {
@@ -78,6 +93,5 @@ public class Utils {
         }
 
         return packageName;
-
     }
 }
