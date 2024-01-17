@@ -1,9 +1,7 @@
-package nl.boukenijhuis;
+package nl.boukenijhuis.assistants;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.boukenijhuis.dto.ChatGptRequest;
-import nl.boukenijhuis.dto.ChatGptResponse;
 import nl.boukenijhuis.dto.CodeContainer;
 
 import java.io.IOException;
@@ -14,31 +12,27 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ChatGpt implements AIAssistant {
+public abstract class AbstractAIAssistant implements AIAssistant {
 
-    // TODO change in properties & remove from history!
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-    private static final HttpClient client = HttpClient.newHttpClient();
+    protected static final ObjectMapper objectMapper = new ObjectMapper();
+    protected static final HttpClient client = HttpClient.newHttpClient();
+    protected Properties properties;
 
-    private Properties properties;
-
-    public ChatGpt(Properties properties) {
+    public AbstractAIAssistant(Properties properties) {
         this.properties = properties;
     }
 
     public CodeContainer call(Path testFile) throws IOException, InterruptedException {
-
         String prompt = "Implement the class under test. %n%n%s";
         String promptWithFile = String.format(prompt, readFile(testFile));
-        String requestBody = createRequestBody(promptWithFile);
-        HttpRequest request = getHttpRequest(requestBody);
 
         try {
+            String requestBody = createRequestBody(promptWithFile);
+            HttpRequest request = getHttpRequest(requestBody, getPropertyPrefix());
             String javaContent = "";
             int attempts = 0;
             while (javaContent.isBlank() && attempts < 5) {
@@ -54,11 +48,17 @@ public class ChatGpt implements AIAssistant {
         }
     }
 
-    private String extractFileName(Path testFile) {
+    protected abstract String getPropertyPrefix();
+
+    protected abstract String createRequestBody(String promptWithFile) throws JsonProcessingException;
+
+    protected abstract String getContent(HttpResponse<String> response) throws JsonProcessingException;
+
+    protected String extractFileName(Path testFile) {
         return testFile.toFile().getName().replace("Test", "");
     }
 
-    private String extractJavaContent(String content) {
+    protected String extractJavaContent(String content) {
         Pattern pattern = Pattern.compile("```java(.*?)```", Pattern.DOTALL);
         Matcher matcher = pattern.matcher(content);
 
@@ -70,12 +70,7 @@ public class ChatGpt implements AIAssistant {
         }
     }
 
-    private static String getContent(HttpResponse<String> response) throws JsonProcessingException {
-        ChatGptResponse chatGptResponse = objectMapper.readValue(response.body(), ChatGptResponse.class);
-        return chatGptResponse.choices().get(0).message().content();
-    }
-
-    private String readFile(Path file) {
+    protected String readFile(Path file) {
         try {
             return Files.readString(file);
         } catch (IOException e) {
@@ -83,12 +78,11 @@ public class ChatGpt implements AIAssistant {
         }
     }
 
-    private HttpRequest getHttpRequest(String inputBody) {
-
+    protected HttpRequest getHttpRequest(String inputBody, String propertyPrefix) {
         try {
-            String apiKey = (String) properties.get("chatgpt.api-key");
-            String server = (String) properties.get("chatgpt.server");
-            String url = (String) properties.get("chatgpt.url");
+            String apiKey = (String) properties.get(propertyPrefix + ".api-key");
+            String server = (String) properties.get(propertyPrefix + ".server");
+            String url = (String) properties.get(propertyPrefix + ".url");
             return HttpRequest.newBuilder()
                     .uri(new URI(server + url))
                     .header("Content-Type", "application/json")
@@ -96,18 +90,6 @@ public class ChatGpt implements AIAssistant {
                     .POST(HttpRequest.BodyPublishers.ofString(inputBody))
                     .build();
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private String createRequestBody(String prompt) {
-        List<ChatGptRequest.MessageDTO> messageList = List.of(new ChatGptRequest.MessageDTO("user", prompt));
-        int maxTokens = Integer.parseInt((String) properties.get("chatgpt.maxTokens"));
-        ChatGptRequest chatGptRequest = new ChatGptRequest("gpt-4", messageList, maxTokens);
-
-        try {
-            return objectMapper.writeValueAsString(chatGptRequest);
-        } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }

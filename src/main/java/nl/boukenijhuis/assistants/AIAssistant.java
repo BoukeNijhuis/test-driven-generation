@@ -1,4 +1,4 @@
-package nl.boukenijhuis;
+package nl.boukenijhuis.assistants;
 
 import nl.boukenijhuis.dto.CodeContainer;
 

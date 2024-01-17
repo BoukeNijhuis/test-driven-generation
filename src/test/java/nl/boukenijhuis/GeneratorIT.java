@@ -1,5 +1,6 @@
 package nl.boukenijhuis;
 
+import nl.boukenijhuis.assistants.AIAssistant;
 import nl.boukenijhuis.dto.CodeContainer;
 import org.junit.jupiter.api.Test;
 
@@ -13,33 +14,44 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class GeneratorIT extends IntegrationTest {
 
     @Test
-    public void happyFlowWithoutPackage() throws IOException {
+    public void chatGptHappyFlowWithoutPackage() throws IOException {
 
         String packageName = "";
         String inputFile = "src/test/resources/input/PrimeNumberGeneratorTestWithoutPackage.java";
         String outputFileName = "PrimeNumberGeneratorWithoutPackage.java";
-        String outputFileContent = readFile("expected/" + outputFileName);
+        String outputFileContent = readFile("expected/chatgpt/" + outputFileName);
 
         happyFlow(packageName, inputFile, outputFileName, outputFileContent);
     }
 
     // TODO rename files to "WithSingleLevelPackage"
     @Test
-    public void happyFlowWithSinglePackage() throws IOException {
+    public void chatGptHappyFlowWithSinglePackage() throws IOException {
         String packageName = "example";
         String inputFile = "src/test/resources/input/PrimeNumberGeneratorTest.java";
         String outputFileName = "PrimeNumberGenerator.java";
-        String outputFileContent = readFile("expected/" + outputFileName);
+        String outputFileContent = readFile("expected/chatgpt/" + outputFileName);
 
         happyFlow(packageName, inputFile, outputFileName, outputFileContent);
     }
 
     @Test
-    public void happyFlowWithMultipleLevelPackage() throws IOException {
+    public void chatGptHappyFlowWithMultipleLevelPackage() throws IOException {
         String packageName = "com.example";
         String inputFile = "src/test/resources/input/PrimeNumberGeneratorTestWithMultipleLevelPackage.java";
         String outputFileName = "PrimeNumberGeneratorWithMultipleLevelPackage.java";
-        String outputFileContent = readFile("expected/" + outputFileName);
+        String outputFileContent = readFile("expected/chatgpt/" + outputFileName);
+
+        happyFlow(packageName, inputFile, outputFileName, outputFileContent);
+    }
+
+    @Test
+    public void llama2Test() throws IOException {
+
+        String packageName = "example";
+        String inputFile = "src/test/resources/input/PrimeNumberGeneratorTest.java";
+        String outputFileName = "PrimeNumberGenerator.java";
+        String outputFileContent = readFile("expected/llama2/" + outputFileName);
 
         happyFlow(packageName, inputFile, outputFileName, outputFileContent);
     }
@@ -48,7 +60,7 @@ class GeneratorIT extends IntegrationTest {
         Path tempDirectory = Files.createTempDirectory("test");
         String[] args = {inputFile, tempDirectory.toString()};
         TestRunner testRunner = new TestRunner();
-        new Generator().run(new ChatGptTest(outputFileName, outputFileContent), testRunner, args);
+        new Generator().run(new StubAssistant(outputFileName, outputFileContent), testRunner, args);
 
         // check if the file is created with correct content
         String packageDirectories = packageName.replace(".", "/");
@@ -62,7 +74,7 @@ class GeneratorIT extends IntegrationTest {
         assertEquals(1, latestTestInfo.succeeded());
     }
 
-    record ChatGptTest(String outputFileName, String outputFileContent) implements AIAssistant {
+    record StubAssistant(String outputFileName, String outputFileContent) implements AIAssistant {
 
         @Override
         public CodeContainer call(Path testFile) {

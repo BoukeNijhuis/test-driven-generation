@@ -1,4 +1,4 @@
-package nl.boukenijhuis.dto;
+package nl.boukenijhuis.assistants.chatgpt.dto;
 
 import java.util.List;
 
