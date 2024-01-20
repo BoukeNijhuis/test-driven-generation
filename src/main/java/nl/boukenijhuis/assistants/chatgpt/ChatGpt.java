@@ -22,15 +22,15 @@ public class ChatGpt extends AbstractAIAssistant {
 
     @Override
     protected String getContent(HttpResponse<String> response) throws JsonProcessingException {
-        ChatGptResponse chatGptResponse = objectMapper.readValue(response.body(), ChatGptResponse.class);
-        return chatGptResponse.choices().get(0).message().content();
+        var responseClass = objectMapper.readValue(response.body(), ChatGptResponse.class);
+        return responseClass.choices().get(0).message().content();
     }
 
     @Override
     protected String createRequestBody(String prompt) throws JsonProcessingException {
-        List<ChatGptRequest.MessageDTO> messageList = List.of(new ChatGptRequest.MessageDTO("user", prompt));
+        var messageList = List.of(new ChatGptRequest.MessageDTO("user", prompt));
         int maxTokens = Integer.parseInt((String) properties.get("chatgpt.maxTokens"));
-        ChatGptRequest chatGptRequest = new ChatGptRequest("gpt-4", messageList, maxTokens);
+        var chatGptRequest = new ChatGptRequest("gpt-4", messageList, maxTokens);
         return objectMapper.writeValueAsString(chatGptRequest);
     }
 }

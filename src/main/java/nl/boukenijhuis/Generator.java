@@ -24,13 +24,10 @@ public class Generator {
             properties.load(Generator.class.getResourceAsStream("/test-driven-generation.properties"));
 
             // start a generator and inject an AI assistant
-//            new Generator().run(new ChatGpt(properties), new TestRunner(), args);
             new Generator().run(new Llama2(properties), new TestRunner(), args);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-
-        // TODO: create a Bard version as well
     }
 
     public void run(AIAssistant assistant, TestRunner testRunner, String[] args) throws IOException {
