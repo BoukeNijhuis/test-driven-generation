@@ -3,6 +3,7 @@ package nl.boukenijhuis.assistants;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.boukenijhuis.dto.CodeContainer;
+import nl.boukenijhuis.dto.PreviousRunContainer;
 
 import java.io.IOException;
 import java.net.URI;
@@ -12,6 +13,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,33 +22,49 @@ import java.util.regex.Pattern;
 public abstract class AbstractAIAssistant implements AIAssistant {
 
     protected static final ObjectMapper objectMapper = new ObjectMapper();
-    protected static final HttpClient client = HttpClient.newHttpClient();
+    // TODO make configurable && use something like a response timeout
+    protected static final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
     protected Properties properties;
 
     public AbstractAIAssistant(Properties properties) {
         this.properties = properties;
     }
 
-    public CodeContainer call(Path testFile) throws IOException, InterruptedException {
-        String prompt = "Implement the class under test. %n%n%s";
-        String promptWithFile = String.format(prompt, readFile(testFile));
+    public CodeContainer call(Path testFile, PreviousRunContainer previousRunContainer) throws IOException, InterruptedException {
 
-        try {
-            String requestBody = createRequestBody(promptWithFile);
-            HttpRequest request = getHttpRequest(requestBody, getPropertyPrefix());
-            String javaContent = "";
-            int attempts = 0;
-            while (javaContent.isBlank() && attempts < 5) {
-                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                System.out.println(response.body());
-                String content = getContent(response);
-                javaContent = extractJavaContent(content);
-                attempts++;
+        // use input from previous run when available
+        String inputPreviousRun = previousRunContainer.input();
+        String prompt = !inputPreviousRun.isBlank() ? getPromptWithInput(inputPreviousRun) : getPromptWithFile(testFile);
+
+        // TODO introduce own properties object that holds defaults?
+        int retries = Integer.parseInt(properties.getProperty("retries", "5"));
+
+        String requestBody = createRequestBody(prompt);
+        HttpRequest request = getHttpRequest(requestBody, getPropertyPrefix());
+        String javaContent = "";
+        int attempts = 0;
+        while (++attempts <= retries) {
+            System.out.println("Internal attempt: " + attempts);
+            // TODO: add a time out of ten seconds
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            String content = getContent(response);
+            javaContent = extractJavaContent(content);
+            if (javaContent != null) {
+                return new CodeContainer(extractFileName(testFile), javaContent, attempts);
             }
-            return new CodeContainer(extractFileName(testFile), javaContent, attempts);
-        } catch (IOException | InterruptedException e) {
-            throw e;
         }
+        // no solution found
+        throw new RuntimeException("Could not find a solution.");
+    }
+
+    private String getPromptWithInput(String inputPreviousRun) {
+        return "Provide a new implementation that fixes the following error: " + inputPreviousRun;
+    }
+
+    // TODO per assistant?
+    private String getPromptWithFile(Path testFile) {
+        String prompt = "Give me an implementation that will pass this test. Give me only code and no explanation. Include imports. %n%n%s";
+        return String.format(prompt, readFile(testFile));
     }
 
     protected abstract String getPropertyPrefix();
@@ -58,15 +77,32 @@ public abstract class AbstractAIAssistant implements AIAssistant {
         return testFile.toFile().getName().replace("Test", "");
     }
 
+    // TODO per assistant?
     protected String extractJavaContent(String content) {
-        Pattern pattern = Pattern.compile("```java(.*?)```", Pattern.DOTALL);
+
+        List<String> stringList = List.of(
+                "```java(.*?)```",
+                "```(.*?)```"
+        );
+
+        for (String s : stringList) {
+            String javaContent = extractJavaContent(content, Pattern.compile(s, Pattern.DOTALL));
+            if (javaContent != null) {
+                return javaContent;
+            }
+        }
+
+        // nothing found
+        return null;
+    }
+
+    private String extractJavaContent(String content, Pattern pattern) {
         Matcher matcher = pattern.matcher(content);
 
         if (matcher.find()) {
             return matcher.group(1).trim();
         } else {
-            // No match found, return empty string or handle as needed
-            return "";
+            return null;
         }
     }
 
