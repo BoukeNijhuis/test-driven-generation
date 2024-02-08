@@ -11,6 +11,8 @@ import java.util.Collections;
 
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClasspathRoots;
 
+// TODO make this the JUnit testrunner
+// TODO make this class reponsible for adding it own library to the classpath
 public class TestRunner {
 
     private SummaryGeneratingListener listener = new SummaryGeneratingListener();
@@ -27,14 +29,22 @@ public class TestRunner {
 
         long testsFoundCount = listener.getSummary().getTestsFoundCount();
         long testsSucceededCount = listener.getSummary().getTestsSucceededCount();
-        latestTestInfo = new TestInfo(testsFoundCount, testsSucceededCount);
-        return getLatestTestInfo();
+        var failureList = listener.getSummary().getFailures();
+        // TODO handle multiple failures
+        String errorOutput = null;
+        if (!failureList.isEmpty()) {
+            errorOutput = failureList.getFirst().getException().getMessage();
+        }
+        return latestTestInfo = new TestInfo(testsFoundCount, testsSucceededCount, errorOutput);
     }
 
     public TestInfo getLatestTestInfo() {
         return latestTestInfo;
     }
 
-    record TestInfo(long found, long succeeded){};
+    record TestInfo(long found, long succeeded, String errorOutput) {
+    }
+
+    ;
 
 }

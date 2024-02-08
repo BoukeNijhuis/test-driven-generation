@@ -1,6 +1,7 @@
 package nl.boukenijhuis;
 
 import nl.boukenijhuis.dto.CodeContainer;
+import nl.boukenijhuis.dto.CompilationContainer;
 import nl.boukenijhuis.dto.InputContainer;
 
 import javax.tools.JavaCompiler;
@@ -9,9 +10,11 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -24,6 +27,8 @@ public class Utils {
         Path tempPackageDirectory = inputContainer.getOutputDirectory();
         tempPackageDirectory = createPackageDirectories(response.getPackageName(), tempPackageDirectory);
         Path tempFile = tempPackageDirectory.resolve(response.fileName());
+        // remove the file if it already exists
+        Files.deleteIfExists(tempFile);
         Files.createFile(tempFile);
         Files.writeString(tempFile, response.content());
         return tempFile;
@@ -42,19 +47,38 @@ public class Utils {
             do {
                 String directory = stringTokenizer.nextToken();
                 tempPackageDirectory = tempPackageDirectory.resolve(directory);
-                Files.createDirectory(tempPackageDirectory);
+                createDirectory(tempPackageDirectory);
             } while (stringTokenizer.hasMoreTokens());
         }
         return tempPackageDirectory;
     }
 
-    public static void compileFiles(Path... pathArray) throws IOException {
+    /**
+     * Create a directory if it does not exist or do nothing (if it does).
+     * @param directory
+     * @throws IOException
+     */
+    private static void createDirectory(Path directory) throws IOException {
+        try {
+            Files.createDirectory(directory);
+        } catch (FileAlreadyExistsException e) {
+            // do nothing, because the directory is already there
+        }
+    }
+
+    public static CompilationContainer compileFiles(Path... pathArray) throws IOException {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
         List<File> compileFileList = Arrays.stream(pathArray).map(Path::toFile).toList();
         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(compileFileList);
-        compiler.getTask(null, fileManager, null, null, null, compilationUnits).call();
+        var stringWriter = new StringWriter();
+        var succesfulCompilation = compiler.getTask(stringWriter, fileManager, null, null, null, compilationUnits).call();
         fileManager.close();
+        if (succesfulCompilation) {
+            return new CompilationContainer();
+        } else {
+            return new CompilationContainer(stringWriter.toString());
+        }
     }
 
     public static void compileFilesInDirectory(Path directory) throws IOException {
@@ -89,7 +113,12 @@ public class Utils {
         // there is a package
         if (packageStart >= 0) {
             int packageEnd = sourceCode.indexOf(";", packageStart);
-            packageName = sourceCode.substring(packageStart + searchString.length(), packageEnd);
+            if (packageEnd != -1) {
+                packageName = sourceCode.substring(packageStart + searchString.length(), packageEnd);
+            }
+            else {
+                throw new RuntimeException("Package name not found in: " + sourceCode);
+            }
         }
 
         return packageName;

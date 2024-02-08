@@ -4,12 +4,14 @@ import nl.boukenijhuis.assistants.AIAssistant;
 import nl.boukenijhuis.assistants.llama2.Llama2;
 import nl.boukenijhuis.dto.CodeContainer;
 import nl.boukenijhuis.dto.InputContainer;
+import nl.boukenijhuis.dto.PreviousRunContainer;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static nl.boukenijhuis.Utils.addToClassLoader;
 import static nl.boukenijhuis.Utils.compileFiles;
 import static nl.boukenijhuis.Utils.createTemporaryFile;
@@ -26,7 +28,7 @@ public class Generator {
             // start a generator and inject an AI assistant
             new Generator().run(new Llama2(properties), new TestRunner(), args);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -35,46 +37,70 @@ public class Generator {
         // sanitize and provide default inputs
         InputContainer inputContainer = InputContainer.build(args);
 
-        // get solution filename and content
-        CodeContainer codeContainer = callAssistant(assistant, inputContainer);
+        // object for storing test information
+        TestRunner.TestInfo testInfo = null;
+        int externalAttempts = 0;
+        // TODO get from properties, static global properties object?
+        int externalMaxRetries = 5;
+        Path destinationFilePath = null;
+        Path solutionFilePath = null;
 
-        // create the solution file in the temp directory
-        Path solutionFilePath = createTemporaryFile(inputContainer, codeContainer);
+        do {
+            System.out.println("External attempt: " + ++externalAttempts);
+            PreviousRunContainer previousRunContainer = new PreviousRunContainer();
 
-        // copy the test file to the temp directory
-        Path testFileNamePath = inputContainer.getInputFile().getFileName();
-        String packageDirectories = codeContainer.getPackageName().replace(".", "/");
-        Path destinationFilePath = inputContainer.getOutputDirectory().resolve(packageDirectories).resolve(testFileNamePath);
-        Files.copy(inputContainer.getInputFile(), destinationFilePath);
+            // get solution filename and content
+            CodeContainer codeContainer = callAssistant(assistant, inputContainer, previousRunContainer);
 
-        // compile the solution file and the test source file
-        compileFiles(solutionFilePath, destinationFilePath);
+            // create the solution file in the temp directory
+            solutionFilePath = createTemporaryFile(inputContainer, codeContainer);
 
-        // add all compiled Java files to class loader
-        addToClassLoader(inputContainer.getOutputDirectory());
+            // copy the test file to the temp directory
+            Path testFileNamePath = inputContainer.getInputFile().getFileName();
+            String packageDirectories = codeContainer.getPackageName().replace(".", "/");
+            destinationFilePath = inputContainer.getOutputDirectory().resolve(packageDirectories).resolve(testFileNamePath);
+            Files.copy(inputContainer.getInputFile(), destinationFilePath, REPLACE_EXISTING);
 
-        // run the test
-        TestRunner.TestInfo testInfo = testRunner.runTestFile(inputContainer);
-        String format = String.format("Found: %d, succeeded: %d", testInfo.found(), testInfo.succeeded());
-        System.out.println(format);
+            // compile the solution file and the test source file
+            var compilationContainer = compileFiles(solutionFilePath, destinationFilePath);
+            if (!compilationContainer.compilationSuccessful()) {
+                // give the error to the AI assistant
+                previousRunContainer = previousRunContainer.updateInput(compilationContainer.errorMessage());
+                System.out.println(previousRunContainer.input());
+                continue;
+            }
 
-        // if failing tests, provide the error to the AI assistant (and get new content)
+            // add all compiled Java files to class loader
+            addToClassLoader(inputContainer.getOutputDirectory());
 
-        // if successful test, stop
+            // run the test
+            testInfo = testRunner.runTestFile(inputContainer);
+            String format = String.format("Tests found: %d, succeeded: %d", testInfo.found(), testInfo.succeeded());
+            System.out.println(format);
+
+            // if failing tests, provide the error to the AI assistant (and get new content)
+
+        } while (solutionNotFound(testInfo) && externalAttempts <= externalMaxRetries - 1);
+
+        if (solutionNotFound(testInfo)) {
+            System.out.println("No solution found.");
+        } else {
+            System.out.println("Solution found: " + solutionFilePath);
+        }
+    }
+
+    private static boolean solutionNotFound(TestRunner.TestInfo testInfo) {
+        return testInfo == null || testInfo.succeeded() != testInfo.found();
     }
 
 
-
-    private static CodeContainer callAssistant(AIAssistant assistant, InputContainer inputContainer) {
+    private static CodeContainer callAssistant(AIAssistant assistant, InputContainer inputContainer, PreviousRunContainer previousRunContainer) {
         CodeContainer response;
         try {
-            response = assistant.call(inputContainer.getInputFile());
+            response = assistant.call(inputContainer.getInputFile(), previousRunContainer);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
         return response;
     }
-
-
-
 }

@@ -2,6 +2,7 @@ package nl.boukenijhuis;
 
 import nl.boukenijhuis.assistants.AIAssistant;
 import nl.boukenijhuis.dto.CodeContainer;
+import nl.boukenijhuis.dto.PreviousRunContainer;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -77,7 +78,7 @@ class GeneratorIT extends IntegrationTest {
     record StubAssistant(String outputFileName, String outputFileContent) implements AIAssistant {
 
         @Override
-        public CodeContainer call(Path testFile) {
+        public CodeContainer call(Path testFile, PreviousRunContainer previousRunContainer) {
             return new CodeContainer(outputFileName, outputFileContent);
         }
     }
