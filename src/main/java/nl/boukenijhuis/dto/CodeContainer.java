@@ -62,26 +62,22 @@ public final class CodeContainer {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (CodeContainer) obj;
-        return Objects.equals(this.fileName, that.fileName) &&
-                Objects.equals(this.content, that.content) &&
-                this.attempts == that.attempts;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CodeContainer that = (CodeContainer) o;
+        return attempts == that.attempts && Objects.equals(content, that.content) && Objects.equals(fileName, that.fileName) && Objects.equals(packageName, that.packageName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(fileName, content, attempts);
+        return Objects.hash(content, fileName, packageName, attempts);
     }
 
     @Override
     public String toString() {
-        return "CodeContainer[" +
-                "fileName=" + fileName + ", " +
-                "content=" + content + ", " +
-                "attempts=" + attempts + ']';
+        return "CodeContainer{content='%s', fileName='%s', packageName='%s', attempts=%d}"
+                .formatted(content, fileName, packageName, attempts);
     }
 
 }

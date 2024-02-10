@@ -68,7 +68,7 @@ public abstract class AbstractAIAssistant implements AIAssistant {
 
     // TODO per assistant?
     private String getPromptWithFile(Path testFile) {
-        String prompt = "Give me an implementation that will pass this test. Give me only code and no explanation. Include imports. %n%n%s";
+        String prompt = "Give me an implementation that will pass this test. Give me only code and no explanation. Include imports and use the right package. %n%n%s";
         return String.format(prompt, readFile(testFile));
     }
 

@@ -38,7 +38,7 @@ public final class InputContainer {
             outputDirectory = Files.createTempDirectory("bouke");
         }
 
-        // TODO: does the input compile
+        // TODO: does the input compile (difficult to prove without implementation)
 
         return new InputContainer(inputFile, outputDirectory);
     }
