@@ -8,24 +8,44 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class CodeContainerTest {
 
     @Test
-    void testFileNameExtractionHappyFlow() throws ClassNameNotFoundException {
-        test("class HappyFlow{}", "HappyFlow.java");
-        test("   class HappyFlow{}", "HappyFlow.java");
-        test("public class HappyFlow{}", "HappyFlow.java");
-        test(" public class HappyFlow{}", "HappyFlow.java");
-        test("public class HappyFlow    {}", "HappyFlow.java");
-        test("public     class HappyFlow{}", "HappyFlow.java");
-        test("public class    HappyFlow{}", "HappyFlow.java");
+    void fileNameExtractionHappyFlow() throws ClassNameNotFoundException {
+        testFileNameExtraction("class HappyFlow{}", "HappyFlow.java");
+        testFileNameExtraction("   class HappyFlow{}", "HappyFlow.java");
+        testFileNameExtraction("public class HappyFlow{}", "HappyFlow.java");
+        testFileNameExtraction(" public class HappyFlow{}", "HappyFlow.java");
+        testFileNameExtraction("public class HappyFlow    {}", "HappyFlow.java");
+        testFileNameExtraction("public     class HappyFlow{}", "HappyFlow.java");
+        testFileNameExtraction("public class    HappyFlow{}", "HappyFlow.java");
     }
 
     @Test
-    void testFileNameExtractionUnhappyFlow() {
+    void fileNameExtractionUnhappyFlow() {
         // TODO: implement
     }
 
-    private void test(String content, String expectedFileName) throws ClassNameNotFoundException {
+    private void testFileNameExtraction(String content, String expectedFileName) throws ClassNameNotFoundException {
         CodeContainer co = new CodeContainer(content);
         assertEquals(expectedFileName, co.getFileName());
+    }
+
+    @Test
+    void packageNameExtractionHappyFlow() throws ClassNameNotFoundException {
+        testPackageNameExtraction("package happyflow; class C{}", "happyflow");
+        testPackageNameExtraction("   package happyflow; class C{}", "happyflow");
+        testPackageNameExtraction("package    happyflow; class C{}", "happyflow");
+        testPackageNameExtraction("package nl.happyflow; class C{}", "nl.happyflow");
+        testPackageNameExtraction("package happyflow   ; class C{}", "happyflow");
+        testPackageNameExtraction("class C{}", "");
+    }
+
+    @Test
+    void packageNameExtractionUnhappyFlow() {
+        // TODO: implement
+    }
+
+    private void testPackageNameExtraction(String content, String expectedPackageName) throws ClassNameNotFoundException {
+        CodeContainer co = new CodeContainer(content);
+        assertEquals(expectedPackageName, co.getPackageName());
     }
 
 }

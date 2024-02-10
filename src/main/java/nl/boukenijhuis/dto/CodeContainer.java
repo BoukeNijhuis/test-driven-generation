@@ -26,33 +26,23 @@ public final class CodeContainer {
     private String extractClassName() throws ClassNameNotFoundException {
         // matches "public" (optional) followed by "class" and then the class name
         String regex = "\\b(?:public\\s+)?class\\s+(\\w+)\\b";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(content);
+        Matcher matcher = Pattern.compile(regex).matcher(content);
         if (matcher.find()) {
             return matcher.group(1);
         } else {
-            throw new ClassNameNotFoundException();
+            throw new ClassNameNotFoundException("Class name not found in: " + content);
         }
     }
 
     // find the package name in source code
     private String extractPackageName() {
-        String searchString = "package ";
-        int packageStart = content.indexOf(searchString);
-        String packageName = "";
-
-        // there is a package
-        if (packageStart >= 0) {
-            int packageEnd = content.indexOf(";", packageStart);
-            if (packageEnd != -1) {
-                packageName = content.substring(packageStart + searchString.length(), packageEnd);
-            }
-            else {
-                throw new RuntimeException("Package name not found in: " + content);
-            }
+        String regex = "package\\s+(\\w+(\\.\\w+)*)";
+        Matcher matcher = Pattern.compile(regex).matcher(content);
+        if (matcher.find()) {
+            return matcher.group(1);
+        } else {
+            return "";
         }
-
-        return packageName;
     }
 
     public String getFileName() {
