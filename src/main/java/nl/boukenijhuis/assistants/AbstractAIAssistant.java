@@ -2,6 +2,7 @@ package nl.boukenijhuis.assistants;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.boukenijhuis.ClassNameNotFoundException;
 import nl.boukenijhuis.dto.CodeContainer;
 import nl.boukenijhuis.dto.PreviousRunContainer;
 
@@ -37,20 +38,24 @@ public abstract class AbstractAIAssistant implements AIAssistant {
         String prompt = !inputPreviousRun.isBlank() ? getPromptWithInput(inputPreviousRun) : getPromptWithFile(testFile);
 
         // TODO introduce own properties object that holds defaults?
-        int retries = Integer.parseInt(properties.getProperty("retries", "5"));
+        int maxInternalAttempts = Integer.parseInt(properties.getProperty("retries", "5"));
 
         String requestBody = createRequestBody(prompt);
         HttpRequest request = getHttpRequest(requestBody, getPropertyPrefix());
         String javaContent = "";
-        int attempts = 0;
-        while (++attempts <= retries) {
-            System.out.println("Internal attempt: " + attempts);
+        int internalAttempts = 0;
+        while (++internalAttempts <= maxInternalAttempts) {
+            System.out.println("Internal attempt: " + internalAttempts);
             // TODO: add a time out of ten seconds
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             String content = getContent(response);
             javaContent = extractJavaContent(content);
             if (javaContent != null) {
-                return new CodeContainer(extractFileName(testFile), javaContent, attempts);
+                try {
+                    return new CodeContainer(javaContent, internalAttempts);
+                } catch (ClassNameNotFoundException e) {
+                    // do nothing == continue
+                }
             }
         }
         // no solution found

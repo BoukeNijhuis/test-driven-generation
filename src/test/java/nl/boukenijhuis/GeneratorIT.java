@@ -61,7 +61,7 @@ class GeneratorIT extends IntegrationTest {
         Path tempDirectory = Files.createTempDirectory("test");
         String[] args = {inputFile, tempDirectory.toString()};
         TestRunner testRunner = new TestRunner();
-        new Generator().run(new StubAssistant(outputFileName, outputFileContent), testRunner, args);
+        new Generator().run(new StubAssistant(outputFileContent), testRunner, args);
 
         // check if the file is created with correct content
         String packageDirectories = packageName.replace(".", "/");
@@ -75,11 +75,15 @@ class GeneratorIT extends IntegrationTest {
         assertEquals(1, latestTestInfo.succeeded());
     }
 
-    record StubAssistant(String outputFileName, String outputFileContent) implements AIAssistant {
+    record StubAssistant(String outputFileContent) implements AIAssistant {
 
         @Override
-        public CodeContainer call(Path testFile, PreviousRunContainer previousRunContainer) {
-            return new CodeContainer(outputFileName, outputFileContent);
+        public CodeContainer call(Path testFile, PreviousRunContainer previousRunContainer)  {
+            try {
+                return new CodeContainer(outputFileContent);
+            } catch (ClassNameNotFoundException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

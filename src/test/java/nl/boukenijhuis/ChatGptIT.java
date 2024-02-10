@@ -23,7 +23,7 @@ public class ChatGptIT extends IntegrationTest {
     private String SECOND_REPLY = "second";
 
     @Test
-    public void integrationTest() throws IOException, InterruptedException {
+    public void integrationTest() throws IOException, InterruptedException, ClassNameNotFoundException {
         // first reply
         String path = "/v1/chat/completions";
         stubFor(post(path)
@@ -46,9 +46,9 @@ public class ChatGptIT extends IntegrationTest {
         var aiAssistant = new ChatGpt(properties);
 
         CodeContainer response = aiAssistant.call(Path.of("src", "test", "resources", "input", "PrimeNumberGeneratorTest.java"), new PreviousRunContainer());
-        assertEquals(readFile("expected/chatgpt/PrimeNumberGenerator.java"), response.content());
-        assertEquals("PrimeNumberGenerator.java", response.fileName());
-        assertEquals(2, response.attempts());
+        assertEquals(readFile("expected/chatgpt/PrimeNumberGenerator.java"), response.getContent());
+        assertEquals("PrimeNumberGenerator.java", response.getFileName());
+        assertEquals(2, response.getAttempts());
     }
 
 }

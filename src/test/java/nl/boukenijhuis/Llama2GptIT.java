@@ -45,9 +45,9 @@ public class Llama2GptIT extends IntegrationTest {
         var aiAssistant = new Llama2(properties);
 
         CodeContainer response = aiAssistant.call(Path.of("src", "test", "resources", "input", "PrimeNumberGeneratorTest.java"), new PreviousRunContainer());
-        assertEquals(readFile("expected/llama2/PrimeNumberGenerator.java"), response.content());
-        assertEquals("PrimeNumberGenerator.java", response.fileName());
-        assertEquals(2, response.attempts());
+        assertEquals(readFile("expected/llama2/PrimeNumberGenerator.java"), response.getContent());
+        assertEquals("PrimeNumberGenerator.java", response.getFileName());
+        assertEquals(2, response.getAttempts());
         assertEquals(List.of(4, 5, 6), aiAssistant.getContext());
     }
 

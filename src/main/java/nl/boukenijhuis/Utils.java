@@ -26,11 +26,11 @@ public class Utils {
     public static Path createTemporaryFile(InputContainer inputContainer, CodeContainer response) throws IOException {
         Path tempPackageDirectory = inputContainer.getOutputDirectory();
         tempPackageDirectory = createPackageDirectories(response.getPackageName(), tempPackageDirectory);
-        Path tempFile = tempPackageDirectory.resolve(response.fileName());
+        Path tempFile = tempPackageDirectory.resolve(response.getFileName());
         // remove the file if it already exists
         Files.deleteIfExists(tempFile);
         Files.createFile(tempFile);
-        Files.writeString(tempFile, response.content());
+        Files.writeString(tempFile, response.getContent());
         return tempFile;
     }
 
@@ -102,25 +102,5 @@ public class Utils {
 
         // set the new classloader as the current classloader
         Thread.currentThread().setContextClassLoader(newClassLoader);
-    }
-
-    // find the package name in source code
-    public static String getPackageName(String sourceCode) {
-        String searchString = "package ";
-        int packageStart = sourceCode.indexOf(searchString);
-        String packageName = "";
-
-        // there is a package
-        if (packageStart >= 0) {
-            int packageEnd = sourceCode.indexOf(";", packageStart);
-            if (packageEnd != -1) {
-                packageName = sourceCode.substring(packageStart + searchString.length(), packageEnd);
-            }
-            else {
-                throw new RuntimeException("Package name not found in: " + sourceCode);
-            }
-        }
-
-        return packageName;
     }
 }
