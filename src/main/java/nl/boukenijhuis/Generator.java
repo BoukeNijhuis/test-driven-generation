@@ -32,6 +32,8 @@ public class Generator {
         }
     }
 
+    // TODO implement debug logging
+
     public void run(AIAssistant assistant, TestRunner testRunner, String[] args) throws IOException {
 
         // sanitize and provide default inputs

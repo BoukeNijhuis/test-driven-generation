@@ -38,7 +38,7 @@ class GeneratorIT extends IntegrationTest {
 
     @Test
     public void chatGptHappyFlowWithMultipleLevelPackage() throws IOException {
-        String packageName = "com.example";
+        String packageName = "org.example";
         String inputFile = "src/test/resources/input/PrimeNumberGeneratorTestWithMultipleLevelPackage.java";
         String outputFileName = "PrimeNumberGeneratorWithMultipleLevelPackage.java";
         String outputFileContent = readFile("expected/chatgpt/" + outputFileName);

@@ -59,7 +59,8 @@ public abstract class AbstractAIAssistant implements AIAssistant {
             }
         }
         // no solution found
-        throw new RuntimeException("Could not find a solution.");
+        String message = String.format("Could not find a solution after %s internal attempts.", maxInternalAttempts);
+        throw new RuntimeException(message);
     }
 
     private String getPromptWithInput(String inputPreviousRun) {
