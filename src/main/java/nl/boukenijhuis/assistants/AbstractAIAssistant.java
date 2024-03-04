@@ -34,7 +34,8 @@ public abstract class AbstractAIAssistant implements AIAssistant {
 
     public AbstractAIAssistant(Properties properties) {
         LOG = LogManager.getLogger();
-        LOG.debug("Assistant: {}", getPropertyPrefix());
+        String model = properties.getProperty(getPropertyPrefix() + ".model");
+        LOG.debug("Family: {}, model: {}", getPropertyPrefix(), model);
         this.properties = properties;
     }
 
@@ -78,7 +79,7 @@ public abstract class AbstractAIAssistant implements AIAssistant {
 
     // TODO per assistant?
     private String getPromptWithFile(Path testFile) {
-        String prompt = "Give me an implementation that will pass this test. Give me only code and no explanation. Include imports and use the right package. %n%n%s";
+        String prompt = "Give me an implementation that will pass this test. Give me only complete code and no explanation or snippets. Include imports and use the right package. %n%n%s";
         return String.format(prompt, readFile(testFile));
     }
 
@@ -107,8 +108,8 @@ public abstract class AbstractAIAssistant implements AIAssistant {
             }
         }
 
-        // nothing found
-        return null;
+        // nothing found, could be a code only answer
+        return content;
     }
 
     private String extractJavaContent(String content, Pattern pattern) {
