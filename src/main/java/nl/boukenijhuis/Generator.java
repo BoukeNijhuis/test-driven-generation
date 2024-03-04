@@ -1,7 +1,7 @@
 package nl.boukenijhuis;
 
 import nl.boukenijhuis.assistants.AIAssistant;
-import nl.boukenijhuis.assistants.llama2.Llama2;
+import nl.boukenijhuis.assistants.ollama.Ollama;
 import nl.boukenijhuis.dto.CodeContainer;
 import nl.boukenijhuis.dto.InputContainer;
 import nl.boukenijhuis.dto.PreviousRunContainer;
@@ -30,7 +30,7 @@ public class Generator {
             properties.load(Generator.class.getResourceAsStream("/test-driven-generation.properties"));
 
             // start a generator and inject an AI assistant
-            new Generator().run(new Llama2(properties), new TestRunner(), args);
+            new Generator().run(new Ollama(properties), new TestRunner(), args);
         } catch (Exception e) {
             e.printStackTrace();
         }

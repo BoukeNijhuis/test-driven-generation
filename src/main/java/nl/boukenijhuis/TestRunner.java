@@ -34,8 +34,8 @@ public class TestRunner {
         String failingTest = null;
         String errorOutput = null;
         if (!failureList.isEmpty()) {
-            failingTest = failureList.getFirst().getTestIdentifier().getDisplayName();
-            String errorMessage = failureList.getFirst().getException().getMessage();
+            failingTest = failureList.get(0).getTestIdentifier().getDisplayName();
+            String errorMessage = failureList.get(0).getException().getMessage();
             errorOutput = String.format("The test with the name '%s' failed with the following error: %s", failingTest, errorMessage);
         }
         return latestTestInfo = new TestInfo(testsFoundCount, testsSucceededCount, failingTest, errorOutput);

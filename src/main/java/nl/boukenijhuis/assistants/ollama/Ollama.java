@@ -1,42 +1,40 @@
-package nl.boukenijhuis.assistants.llama2;
+package nl.boukenijhuis.assistants.ollama;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import nl.boukenijhuis.assistants.AbstractAIAssistant;
-import nl.boukenijhuis.assistants.llama2.dto.Llama2Request;
-import nl.boukenijhuis.assistants.llama2.dto.Llama2Response;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import nl.boukenijhuis.assistants.ollama.dto.OllamaRequest;
+import nl.boukenijhuis.assistants.ollama.dto.OllamaResponse;
 
 import java.net.http.HttpResponse;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-public class Llama2 extends AbstractAIAssistant {
+public class Ollama extends AbstractAIAssistant {
 
-    private static final Logger LOG = LogManager.getLogger();
+    protected List<Integer> context = Collections.emptyList();
+    protected String model;
 
-    private List<Integer> context = Collections.emptyList();
-
-    public Llama2(Properties properties) {
+    public Ollama(Properties properties) {
         super(properties);
+        this.model = properties.getProperty("ollama.model");
     }
 
     @Override
     protected String getPropertyPrefix() {
-        return "llama2";
+        return "ollama";
     }
 
     @Override
     protected String getContent(HttpResponse<String> response) throws JsonProcessingException {
-        var responseClass = objectMapper.readValue(response.body(), Llama2Response.class);
+        var responseClass = objectMapper.readValue(response.body(), OllamaResponse.class);
         this.context = responseClass.context();
         return responseClass.response();
     }
 
     @Override
     protected String createRequestBody(String prompt) throws JsonProcessingException {
-        Llama2Request request = new Llama2Request(prompt, this.context);
+        OllamaRequest request = new OllamaRequest(model, prompt, this.context);
         return objectMapper.writeValueAsString(request);
     }
 

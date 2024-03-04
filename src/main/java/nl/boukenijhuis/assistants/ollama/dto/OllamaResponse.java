@@ -1,9 +1,9 @@
-package nl.boukenijhuis.assistants.llama2.dto;
+package nl.boukenijhuis.assistants.ollama.dto;
 
 import java.util.Date;
 import java.util.List;
 
-public record Llama2Response(
+public record OllamaResponse(
         String model,
         Date created_at,
         String response,

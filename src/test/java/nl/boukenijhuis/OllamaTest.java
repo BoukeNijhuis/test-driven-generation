@@ -1,7 +1,7 @@
 package nl.boukenijhuis;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import nl.boukenijhuis.assistants.llama2.Llama2;
+import nl.boukenijhuis.assistants.ollama.Ollama;
 import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.SSLSession;
@@ -19,9 +19,9 @@ import java.util.Properties;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class Llama2Test extends Llama2 {
+public class OllamaTest extends Ollama {
 
-    private Llama2Test() {
+    private OllamaTest() {
         super(new Properties());
     }
 
@@ -61,7 +61,7 @@ public class Llama2Test extends Llama2 {
 
         @Override
         public java.lang.String body() {
-            String fileName = "stub/llama2/stub_without_code.json";
+            String fileName = "stub/ollama/stub_without_code.json";
             try (var in = getClass().getResourceAsStream("/" + fileName)) {
                 return new String(in.readAllBytes(), StandardCharsets.UTF_8);
             } catch (IOException | NullPointerException e) {

@@ -52,7 +52,7 @@ class GeneratorIT extends IntegrationTest {
         String packageName = "example";
         String inputFile = "src/test/resources/input/PrimeNumberGeneratorTest.java";
         String outputFileName = "PrimeNumberGenerator.java";
-        String outputFileContent = readFile("expected/llama2/" + outputFileName);
+        String outputFileContent = readFile("expected/ollama/" + outputFileName);
 
         happyFlow(packageName, inputFile, outputFileName, outputFileContent);
     }
