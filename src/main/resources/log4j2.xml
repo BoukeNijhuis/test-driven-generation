@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="ConsoleAppender">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %30logger{1.} - %msg%n"/>
+        </Console>
+        <File name="FileAppender" fileName="generator.log" append="false">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %30logger{1.} - %msg%n"/>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="ConsoleAppender"/>
+            <ThresholdFilter level="info"/>
+        </Root>
+        <Logger name="nl.boukenijhuis" level="debug" additivity="true">
+            <AppenderRef ref="FileAppender"/>
+        </Logger>
+    </Loggers>
+</Configuration>

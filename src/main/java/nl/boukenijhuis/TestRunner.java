@@ -31,18 +31,21 @@ public class TestRunner {
         long testsSucceededCount = listener.getSummary().getTestsSucceededCount();
         var failureList = listener.getSummary().getFailures();
         // TODO handle multiple failures
+        String failingTest = null;
         String errorOutput = null;
         if (!failureList.isEmpty()) {
-            errorOutput = failureList.getFirst().getException().getMessage();
+            failingTest = failureList.getFirst().getTestIdentifier().getDisplayName();
+            String errorMessage = failureList.getFirst().getException().getMessage();
+            errorOutput = String.format("The test with the name '%s' failed with the following error: %s", failingTest, errorMessage);
         }
-        return latestTestInfo = new TestInfo(testsFoundCount, testsSucceededCount, errorOutput);
+        return latestTestInfo = new TestInfo(testsFoundCount, testsSucceededCount, failingTest, errorOutput);
     }
 
     public TestInfo getLatestTestInfo() {
         return latestTestInfo;
     }
 
-    record TestInfo(long found, long succeeded, String errorOutput) {
+    record TestInfo(long found, long succeeded, String failingTest, String errorOutput) {
     }
 
     ;

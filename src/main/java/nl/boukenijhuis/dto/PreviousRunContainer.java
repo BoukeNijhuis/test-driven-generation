@@ -1,14 +1,17 @@
 package nl.boukenijhuis.dto;
 
-public record PreviousRunContainer(
-        String input
-) {
+public final class PreviousRunContainer {
+    private String input;
+
+    public PreviousRunContainer(String input) {
+        this.input = input;
+    }
 
     public PreviousRunContainer() {
         this("");
     }
 
-    public PreviousRunContainer updateInput(String input) {
-        return new PreviousRunContainer(input);
+    public String getInput() {
+        return input;
     }
 }

@@ -1,10 +1,14 @@
 package nl.boukenijhuis.dto;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class InputContainer {
+    private static final Logger LOG = LogManager.getLogger();
     private final Path inputFile;
     private final Path outputDirectory;
 
@@ -37,6 +41,7 @@ public final class InputContainer {
             // create a temp dir
             outputDirectory = Files.createTempDirectory("bouke");
         }
+        LOG.debug("Output directory: {}", outputDirectory);
 
         // TODO: does the input compile (difficult to prove without implementation)
 

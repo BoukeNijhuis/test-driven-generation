@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import nl.boukenijhuis.assistants.AbstractAIAssistant;
 import nl.boukenijhuis.assistants.llama2.dto.Llama2Request;
 import nl.boukenijhuis.assistants.llama2.dto.Llama2Response;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.net.http.HttpResponse;
 import java.util.Collections;
@@ -11,6 +13,8 @@ import java.util.List;
 import java.util.Properties;
 
 public class Llama2 extends AbstractAIAssistant {
+
+    private static final Logger LOG = LogManager.getLogger();
 
     private List<Integer> context = Collections.emptyList();
 

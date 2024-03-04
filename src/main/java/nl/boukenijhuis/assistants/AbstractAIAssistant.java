@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.boukenijhuis.ClassNameNotFoundException;
 import nl.boukenijhuis.dto.CodeContainer;
 import nl.boukenijhuis.dto.PreviousRunContainer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.net.URI;
@@ -22,20 +24,26 @@ import java.util.regex.Pattern;
 
 public abstract class AbstractAIAssistant implements AIAssistant {
 
+    // we initialize this later so we can use generic logging
+    protected static Logger LOG;
+
     protected static final ObjectMapper objectMapper = new ObjectMapper();
     // TODO make configurable && use something like a response timeout
     protected static final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
     protected Properties properties;
 
     public AbstractAIAssistant(Properties properties) {
+        LOG = LogManager.getLogger();
+        LOG.debug("Assistant: {}", getPropertyPrefix());
         this.properties = properties;
     }
 
     public CodeContainer call(Path testFile, PreviousRunContainer previousRunContainer) throws IOException, InterruptedException {
 
         // use input from previous run when available
-        String inputPreviousRun = previousRunContainer.input();
+        String inputPreviousRun = previousRunContainer.getInput();
         String prompt = !inputPreviousRun.isBlank() ? getPromptWithInput(inputPreviousRun) : getPromptWithFile(testFile);
+        LOG.debug("Prompt: {}", prompt);
 
         // TODO introduce own properties object that holds defaults?
         int maxInternalAttempts = Integer.parseInt(properties.getProperty("retries", "5"));
@@ -45,10 +53,11 @@ public abstract class AbstractAIAssistant implements AIAssistant {
         String javaContent = "";
         int internalAttempts = 0;
         while (++internalAttempts <= maxInternalAttempts) {
-            System.out.println("Internal attempt: " + internalAttempts);
+            LOG.info("Internal attempt: {}", internalAttempts);
             // TODO: add a time out of ten seconds
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             String content = getContent(response);
+            LOG.debug(content);
             javaContent = extractJavaContent(content);
             if (javaContent != null) {
                 try {

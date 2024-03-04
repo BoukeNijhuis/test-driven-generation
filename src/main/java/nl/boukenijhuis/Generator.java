@@ -5,6 +5,8 @@ import nl.boukenijhuis.assistants.llama2.Llama2;
 import nl.boukenijhuis.dto.CodeContainer;
 import nl.boukenijhuis.dto.InputContainer;
 import nl.boukenijhuis.dto.PreviousRunContainer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,6 +20,8 @@ import static nl.boukenijhuis.Utils.createTemporaryFile;
 
 // TODO rename project to test-driven-generator?
 public class Generator {
+
+    private static final Logger LOG = LogManager.getLogger();
 
     public static void main(String[] args) {
         try {
@@ -46,10 +50,10 @@ public class Generator {
         int externalMaxRetries = 5;
         Path destinationFilePath = null;
         Path solutionFilePath = null;
+        PreviousRunContainer previousRunContainer = new PreviousRunContainer();
 
         do {
-            System.out.println("External attempt: " + ++externalAttempts);
-            PreviousRunContainer previousRunContainer = new PreviousRunContainer();
+            LOG.info("External attempt: {}", ++externalAttempts);
 
             // get solution filename and content
             CodeContainer codeContainer = callAssistant(assistant, inputContainer, previousRunContainer);
@@ -67,8 +71,7 @@ public class Generator {
             var compilationContainer = compileFiles(solutionFilePath, destinationFilePath);
             if (!compilationContainer.compilationSuccessful()) {
                 // give the error to the AI assistant
-                previousRunContainer = previousRunContainer.updateInput(compilationContainer.errorMessage());
-                System.out.println(previousRunContainer.input());
+                previousRunContainer = createPreviousRunContainer(compilationContainer.errorMessage());
                 continue;
             }
 
@@ -77,21 +80,29 @@ public class Generator {
 
             // run the test
             testInfo = testRunner.runTestFile(inputContainer);
-            String format = String.format("Tests found: %d, succeeded: %d", testInfo.found(), testInfo.succeeded());
-            System.out.println(format);
+            LOG.info("Tests found: {}, succeeded: {}", testInfo.found(), testInfo.succeeded());
 
             // if failing tests, provide the error to the AI assistant (and get new content)
+            if (solutionNotFound(testInfo)) {
+                // give the error to the AI assistant
+                previousRunContainer = createPreviousRunContainer(testInfo.errorOutput());
+            }
 
         } while (solutionNotFound(testInfo) && externalAttempts <= externalMaxRetries - 1);
 
         if (solutionNotFound(testInfo)) {
-            System.out.println("No solution found.");
+            LOG.info("No solution found.");
         } else {
-            System.out.println("Solution found: " + solutionFilePath);
+            LOG.info("Solution found: {}", solutionFilePath);
         }
     }
 
-    private static boolean solutionNotFound(TestRunner.TestInfo testInfo) {
+    private PreviousRunContainer createPreviousRunContainer(String error) {
+        LOG.debug(error);
+        return new PreviousRunContainer(error);
+    }
+
+    private boolean solutionNotFound(TestRunner.TestInfo testInfo) {
         return testInfo == null || testInfo.succeeded() != testInfo.found();
     }
 
@@ -100,6 +111,7 @@ public class Generator {
         CodeContainer response;
         try {
             response = assistant.call(inputContainer.getInputFile(), previousRunContainer);
+//            LOG.debug("CodeContainer: {}", response);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
