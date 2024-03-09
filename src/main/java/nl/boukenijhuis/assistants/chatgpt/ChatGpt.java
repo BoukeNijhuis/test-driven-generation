@@ -30,7 +30,7 @@ public class ChatGpt extends AbstractAIAssistant {
     protected String createRequestBody(String prompt) throws JsonProcessingException {
         var messageList = List.of(new ChatGptRequest.MessageDTO("user", prompt));
         int maxTokens = Integer.parseInt((String) properties.get("chatgpt.maxTokens"));
-        var chatGptRequest = new ChatGptRequest("gpt-4", messageList, maxTokens);
+        var chatGptRequest = new ChatGptRequest(properties.getProperty("chatgpt.model"), messageList, maxTokens);
         return objectMapper.writeValueAsString(chatGptRequest);
     }
 }

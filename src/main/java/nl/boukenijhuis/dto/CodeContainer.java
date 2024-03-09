@@ -23,6 +23,7 @@ public final class CodeContainer {
         this.attempts = attempts;
     }
 
+    // TODO: first look for 'public class' and then for 'class
     private String extractClassName() throws ClassNameNotFoundException {
         // matches "public" (optional) followed by "class" and then the class name
         String regex = "\\b(?:public\\s+)?class\\s+(\\w+)\\b";

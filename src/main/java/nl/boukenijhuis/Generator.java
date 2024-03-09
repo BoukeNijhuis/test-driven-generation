@@ -17,6 +17,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static nl.boukenijhuis.Utils.addToClassLoader;
 import static nl.boukenijhuis.Utils.compileFiles;
 import static nl.boukenijhuis.Utils.createTemporaryFile;
+import static nl.boukenijhuis.Utils.determineProjectParentFilePath;
 
 // TODO rename project to test-driven-generator?
 public class Generator {
@@ -50,13 +51,14 @@ public class Generator {
         int externalMaxRetries = 5;
         Path destinationFilePath = null;
         Path solutionFilePath = null;
+        CodeContainer codeContainer = null;
         PreviousRunContainer previousRunContainer = new PreviousRunContainer();
 
         do {
             LOG.info("External attempt: {}", ++externalAttempts);
 
             // get solution filename and content
-            CodeContainer codeContainer = callAssistant(assistant, inputContainer, previousRunContainer);
+            codeContainer = callAssistant(assistant, inputContainer, previousRunContainer);
 
             // create the solution file in the temp directory
             solutionFilePath = createTemporaryFile(inputContainer, codeContainer);
@@ -93,9 +95,16 @@ public class Generator {
         if (solutionNotFound(testInfo)) {
             LOG.info("No solution found.");
         } else {
+            // copy the file to the project (based on the path of the test file)
+            Path projectFileParentPath = determineProjectParentFilePath(inputContainer.getInputFile());
+            Path projectFilePath = projectFileParentPath.resolve(codeContainer.getFileName());
+            solutionFilePath = Files.copy(solutionFilePath, projectFilePath, REPLACE_EXISTING);
+
             LOG.info("Solution found: {}", solutionFilePath);
         }
     }
+
+
 
     private PreviousRunContainer createPreviousRunContainer(String error) {
         LOG.debug(error);

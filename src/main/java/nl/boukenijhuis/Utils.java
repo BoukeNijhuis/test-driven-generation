@@ -103,4 +103,11 @@ public class Utils {
         // set the new classloader as the current classloader
         Thread.currentThread().setContextClassLoader(newClassLoader);
     }
+
+    // returns the location where to solution should go (based upon the input file)
+    public static Path determineProjectParentFilePath(Path inputFilePath) {
+        String parentPathAsString = inputFilePath.getParent().toString();
+        String projectPathAsString = parentPathAsString.replace("/test/", "/main/");
+        return Path.of(projectPathAsString);
+    }
 }
