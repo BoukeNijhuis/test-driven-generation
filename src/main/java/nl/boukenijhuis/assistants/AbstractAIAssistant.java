@@ -33,7 +33,7 @@ public abstract class AbstractAIAssistant implements AIAssistant {
     protected Properties properties;
 
     public AbstractAIAssistant(Properties properties) {
-        LOG = LogManager.getLogger();
+        LOG = LogManager.getLogger(AbstractAIAssistant.class);
         String model = properties.getProperty(getPropertyPrefix() + ".model");
         LOG.debug("Family: {}, model: {}", getPropertyPrefix(), model);
         this.properties = properties;
@@ -140,7 +140,7 @@ public abstract class AbstractAIAssistant implements AIAssistant {
                     .header("Content-Type", "application/json")
                     .header("Authorization", "Bearer " + apiKey)
                     .POST(HttpRequest.BodyPublishers.ofString(inputBody))
-                    .timeout(Duration.ofSeconds(60))
+                    .timeout(Duration.ofSeconds(30))
                     .build();
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);

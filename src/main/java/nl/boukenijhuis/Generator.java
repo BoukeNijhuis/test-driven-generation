@@ -11,6 +11,8 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
@@ -22,7 +24,14 @@ import static nl.boukenijhuis.Utils.determineProjectParentFilePath;
 // TODO rename project to test-driven-generator?
 public class Generator {
 
-    private static final Logger LOG = LogManager.getLogger();
+    private static final Logger LOG = LogManager.getLogger(Generator.class);
+    private final List<String> dependencies;
+
+    public Generator() { this(new ArrayList<>());}
+
+    public Generator(List<String> dependencies) {
+        this.dependencies = dependencies;
+    }
 
     public static void main(String[] args) {
         try {
@@ -70,7 +79,7 @@ public class Generator {
             Files.copy(inputContainer.getInputFile(), destinationFilePath, REPLACE_EXISTING);
 
             // compile the solution file and the test source file
-            var compilationContainer = compileFiles(solutionFilePath, destinationFilePath);
+            var compilationContainer = compileFiles(dependencies, solutionFilePath, destinationFilePath);
             if (!compilationContainer.compilationSuccessful()) {
                 // give the error to the AI assistant
                 previousRunContainer = createPreviousRunContainer(compilationContainer.errorMessage());

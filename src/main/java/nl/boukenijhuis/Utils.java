@@ -17,6 +17,7 @@ import java.net.URLClassLoader;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -36,7 +37,8 @@ public class Utils {
 
     /**
      * Create directories corresponding to the package name.
-     * @param packageName a period seperated String with the directories to create
+     *
+     * @param packageName          a period seperated String with the directories to create
      * @param tempPackageDirectory the directory where the new directories should be created
      * @return the last created directory
      * @throws IOException
@@ -55,6 +57,7 @@ public class Utils {
 
     /**
      * Create a directory if it does not exist or do nothing (if it does).
+     *
      * @param directory
      * @throws IOException
      */
@@ -66,13 +69,19 @@ public class Utils {
         }
     }
 
-    public static CompilationContainer compileFiles(Path... pathArray) throws IOException {
+    public static CompilationContainer compileFiles(List<String> dependencies, Path... pathArray) throws IOException {
+
+        // build a classpath from the current classpath and given dependencies
+        String dependenciesString = String.join(":", dependencies);
+        String classPath = System.getProperty("java.class.path") + ":" + dependenciesString;
+        List<String> optionList = new ArrayList<String>(Arrays.asList("-classpath", classPath));
+
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
         List<File> compileFileList = Arrays.stream(pathArray).map(Path::toFile).toList();
         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(compileFileList);
         var stringWriter = new StringWriter();
-        var succesfulCompilation = compiler.getTask(stringWriter, fileManager, null, null, null, compilationUnits).call();
+        var succesfulCompilation = compiler.getTask(stringWriter, fileManager, null, optionList, null, compilationUnits).call();
         fileManager.close();
         if (succesfulCompilation) {
             return new CompilationContainer();
@@ -108,6 +117,8 @@ public class Utils {
     public static Path determineProjectParentFilePath(Path inputFilePath) {
         String parentPathAsString = inputFilePath.getParent().toString();
         String projectPathAsString = parentPathAsString.replace("/test/", "/main/");
+        // misses the following case: "/test$"
+        projectPathAsString = projectPathAsString.replaceAll("/test$", "/main");
         return Path.of(projectPathAsString);
     }
 }

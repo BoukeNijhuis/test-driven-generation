@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class InputContainer {
-    private static final Logger LOG = LogManager.getLogger();
+    private static final Logger LOG = LogManager.getLogger(InputContainer.class);
     private final Path inputFile;
     private final Path outputDirectory;
 
