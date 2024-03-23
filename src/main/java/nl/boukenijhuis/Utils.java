@@ -69,6 +69,7 @@ public class Utils {
         }
     }
 
+    // TODO: dependencies still necessary? test to see if it works without
     public static CompilationContainer compileFiles(List<String> dependencies, Path... pathArray) throws IOException {
 
         // build a classpath from the current classpath and given dependencies

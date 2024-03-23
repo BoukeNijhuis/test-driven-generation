@@ -1,0 +1,13 @@
+{
+  "model": "llama2",
+  "created_at": "2024-01-17T19:36:01.261603Z",
+  "response": "Here is the implementation of the `HelloWorldController` class:\n```\npackage org.example.endpoint;\n\nimport org.springframework.boot.SpringApplication;\nimport org.springframework.boot.autoconfigure.SpringBootApplication;\nimport org.springframework.web.bind.annotation.RequestMapping;\nimport org.springframework.web.bind.annotation.RestController;\n\n@SpringBootApplication\n@RestController\npublic class HelloWorldController {\n\npublic static void main(String[] args) {\nSpringApplication.run(HelloWorldController.class, args);\n}\n\n@RequestMapping(\"/\")\npublic String helloWorld() {\nreturn \"Hello, World\";\n}\n}\n```\n",
+  "done": true,
+  "context": [4, 5, 6],
+  "total_duration": 17668973125,
+  "load_duration": 1038001042,
+  "prompt_eval_count": 144,
+  "prompt_eval_duration": 666876000,
+  "eval_count": 521,
+  "eval_duration": 15957648000
+}
