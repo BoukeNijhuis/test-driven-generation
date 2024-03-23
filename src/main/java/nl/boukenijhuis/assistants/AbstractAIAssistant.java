@@ -54,11 +54,12 @@ public abstract class AbstractAIAssistant implements AIAssistant {
         String javaContent = "";
         int internalAttempts = 0;
         while (++internalAttempts <= maxInternalAttempts) {
+            // TODO rename to compile loop? is compilation in this loop?
             LOG.info("Internal attempt: {}", internalAttempts);
             // TODO: add a time out of ten seconds
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             String content = getContent(response);
-            LOG.debug(content);
+            LOG.debug("Received answer: \n{}", content);
             javaContent = extractJavaContent(content);
             if (javaContent != null) {
                 try {
@@ -79,7 +80,7 @@ public abstract class AbstractAIAssistant implements AIAssistant {
 
     // TODO per assistant?
     private String getPromptWithFile(Path testFile) {
-        String prompt = "You are a professional Java developer. Give me an IMPLEMENTATION that will pass this test. Give me only complete code and no explanation or snippets. Include imports and use the right package. Always provide EXACTLY one block of code. %n%n%s";
+        String prompt = "You are a professional Java developer. Give me an IMPLEMENTATION that will pass this test. Do not respond with a test. Give me only complete code and no snippets. Include imports and use the right package. %n%n%s";
         return String.format(prompt, readFile(testFile));
     }
 
@@ -108,8 +109,8 @@ public abstract class AbstractAIAssistant implements AIAssistant {
             }
         }
 
-        // nothing found, could be a code only answer
-        return content;
+        // nothing found
+        return null;
     }
 
     private String extractJavaContent(String content, Pattern pattern) {
