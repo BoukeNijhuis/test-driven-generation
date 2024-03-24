@@ -52,6 +52,7 @@ public abstract class AbstractAIAssistant implements AIAssistant {
 
         while (++internalAttempts <= maxInternalAttempts) {
 
+            LOG.info("Internal attempt: {}", internalAttempts);
 
             String prompt = !inputPreviousRun.isBlank() ? getPromptWithError(inputPreviousRun) : getPromptWithFile(testFile);
             LOG.debug("Prompt: {}", prompt);
@@ -59,7 +60,6 @@ public abstract class AbstractAIAssistant implements AIAssistant {
             String requestBody = createRequestBody(prompt);
             HttpRequest request = getHttpRequest(requestBody, getPropertyPrefix());
 
-            LOG.info("Internal attempt: {}", internalAttempts);
             // TODO: add a time out of ten seconds
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             String content = getContent(response);
@@ -69,7 +69,7 @@ public abstract class AbstractAIAssistant implements AIAssistant {
 
                 // we do not want a test, but an implementation
                 if (javaContent.contains("@Test")) {
-                    inputPreviousRun = "You gave a test, but I asked for production code!";
+                    inputPreviousRun = "You gave a test, but I asked for production Java code!";
                     continue;
                 }
 
@@ -122,6 +122,12 @@ public abstract class AbstractAIAssistant implements AIAssistant {
             if (javaContent != null) {
                 return javaContent;
             }
+        }
+
+        // answer could be code only
+        if (content.startsWith("package") || content.startsWith("import")) {
+            // it is probably code
+            return content;
         }
 
         // nothing found

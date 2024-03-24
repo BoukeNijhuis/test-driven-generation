@@ -28,6 +28,8 @@ public class TestRunner {
         launcher.registerTestExecutionListeners(listener);
         launcher.execute(request);
 
+        // TODO sometimes the test found count is zero, this should be impossible
+
         long testsFoundCount = listener.getSummary().getTestsFoundCount();
         long testsSucceededCount = listener.getSummary().getTestsSucceededCount();
         var failureList = listener.getSummary().getFailures();
