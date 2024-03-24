@@ -48,9 +48,8 @@ public class Generator {
         }
     }
 
-    // TODO implement debug logging
-
-    public void run(AIAssistant assistant, TestRunner testRunner, String[] args) throws IOException {
+π    // returns true when a solution is found, false otherwise
+    public boolean run(AIAssistant assistant, TestRunner testRunner, String[] args) throws IOException {
 
         // sanitize and provide default inputs
         InputContainer inputContainer = InputContainer.build(args);
@@ -106,6 +105,7 @@ public class Generator {
 
         if (solutionNotFound(testInfo)) {
             LOG.info("No solution found.");
+            return false;
         } else {
 
             // copy the file to the project (based on the path of the test file)
@@ -114,6 +114,7 @@ public class Generator {
             solutionFilePath = Files.copy(solutionFilePath, projectFilePath, REPLACE_EXISTING);
 
             LOG.info("Solution found: {}", solutionFilePath);
+            return true;
         }
     }
 
