@@ -80,7 +80,11 @@ public abstract class AbstractAIAssistant implements AIAssistant {
 
     // TODO per assistant?
     private String getPromptWithFile(Path testFile) {
-        String prompt = "You are a professional Java developer. Give me an IMPLEMENTATION that will pass this test. Do not respond with a test. Give me only complete code and no snippets. Include imports and use the right package. %n%n%s";
+
+        String prompt = properties.getProperty(getPropertyPrefix() + ".prompt");
+        if (prompt == null) {
+            prompt = "You are a professional Java developer. Give me an IMPLEMENTATION that will pass this test. Do not respond with a test. Give me only complete code and no snippets. Include imports and use the right package. %n%n%s";
+        }
         return String.format(prompt, readFile(testFile));
     }
 
