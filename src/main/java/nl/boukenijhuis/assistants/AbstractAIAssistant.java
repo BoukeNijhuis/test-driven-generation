@@ -41,20 +41,24 @@ public abstract class AbstractAIAssistant implements AIAssistant {
 
     public CodeContainer call(Path testFile, PreviousRunContainer previousRunContainer) throws IOException, InterruptedException {
 
-        // use input from previous run when available
-        String inputPreviousRun = previousRunContainer.getInput();
-        String prompt = !inputPreviousRun.isBlank() ? getPromptWithInput(inputPreviousRun) : getPromptWithFile(testFile);
-        LOG.debug("Prompt: {}", prompt);
-
         // TODO introduce own properties object that holds defaults?
         int maxInternalAttempts = Integer.parseInt(properties.getProperty("retries", "5"));
 
-        String requestBody = createRequestBody(prompt);
-        HttpRequest request = getHttpRequest(requestBody, getPropertyPrefix());
         String javaContent = "";
         int internalAttempts = 0;
+
+        // use input from previous run when available
+        String inputPreviousRun = previousRunContainer.getInput();
+
         while (++internalAttempts <= maxInternalAttempts) {
-            // TODO rename to compile loop? is compilation in this loop?
+
+
+            String prompt = !inputPreviousRun.isBlank() ? getPromptWithError(inputPreviousRun) : getPromptWithFile(testFile);
+            LOG.debug("Prompt: {}", prompt);
+
+            String requestBody = createRequestBody(prompt);
+            HttpRequest request = getHttpRequest(requestBody, getPropertyPrefix());
+
             LOG.info("Internal attempt: {}", internalAttempts);
             // TODO: add a time out of ten seconds
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -62,6 +66,13 @@ public abstract class AbstractAIAssistant implements AIAssistant {
             LOG.debug("Received answer: \n{}", content);
             javaContent = extractJavaContent(content);
             if (javaContent != null) {
+
+                // we do not want a test, but an implementation
+                if (javaContent.contains("@Test")) {
+                    inputPreviousRun = "You gave a test, but I asked for production code!";
+                    continue;
+                }
+
                 try {
                     return new CodeContainer(javaContent, internalAttempts);
                 } catch (ClassNameNotFoundException e) {
@@ -74,7 +85,7 @@ public abstract class AbstractAIAssistant implements AIAssistant {
         throw new RuntimeException(message);
     }
 
-    private String getPromptWithInput(String inputPreviousRun) {
+    private String getPromptWithError(String inputPreviousRun) {
         return "Provide a new implementation that fixes the following error: " + inputPreviousRun;
     }
 
