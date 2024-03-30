@@ -26,7 +26,7 @@ public final class InputContainer {
         // check if the first argument is a file
         Path inputFile = Path.of(args[0]);
         if (!Files.isRegularFile(inputFile)) {
-            throw new RuntimeException(args[0] + " is not a file.");
+            throw new RuntimeException("File [" + args[0] + "] is not a file.");
         }
 
         // check / create the output directory
@@ -35,11 +35,11 @@ public final class InputContainer {
             outputDirectory = Path.of(args[1]);
 
             if (!isAnEmptyDirectory(outputDirectory)) {
-                throw new RuntimeException(args[1] + " is not an empty directory.");
+                throw new RuntimeException("Directory [" + args[1] + "] is not an empty directory.");
             }
         } else {
             // create a temp dir
-            outputDirectory = Files.createTempDirectory("bouke");
+            outputDirectory = Files.createTempDirectory("generator");
         }
         LOG.debug("Output directory: {}", outputDirectory);
 

@@ -52,7 +52,7 @@ public abstract class AbstractAIAssistant implements AIAssistant {
 
         while (++internalAttempts <= maxInternalAttempts) {
 
-            LOG.info("Internal attempt: {}", internalAttempts);
+            LOG.info("Code loop attempt: {}", internalAttempts);
 
             String prompt = !inputPreviousRun.isBlank() ? getPromptWithError(inputPreviousRun) : getPromptWithFile(testFile);
             LOG.debug("Prompt: {}", prompt);

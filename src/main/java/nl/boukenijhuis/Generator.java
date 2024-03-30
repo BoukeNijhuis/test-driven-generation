@@ -44,11 +44,11 @@ public class Generator {
             // start a generator and inject an AI assistant
             new Generator().run(new Ollama(properties), new TestRunner(), args);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.info(e);
         }
     }
 
-π    // returns true when a solution is found, false otherwise
+    // returns true when a solution is found, false otherwise (used in maven plugin)
     public boolean run(AIAssistant assistant, TestRunner testRunner, String[] args) throws IOException {
 
         // sanitize and provide default inputs
@@ -65,8 +65,7 @@ public class Generator {
         PreviousRunContainer previousRunContainer = new PreviousRunContainer();
 
         do {
-            // TODO rename test loop?
-            LOG.info("External attempt: {}", ++externalAttempts);
+            LOG.info("Test loop attempt: {}", ++externalAttempts);
 
             // get solution filename and content
             codeContainer = callAssistant(assistant, inputContainer, previousRunContainer);
@@ -111,7 +110,10 @@ public class Generator {
             // copy the file to the project (based on the path of the test file)
             Path projectFileParentPath = determineProjectParentFilePath(inputContainer.getInputFile());
             Path projectFilePath = projectFileParentPath.resolve(codeContainer.getFileName());
-            solutionFilePath = Files.copy(solutionFilePath, projectFilePath, REPLACE_EXISTING);
+            // only copy when the project file path exists
+            if (Files.exists(projectFilePath)) {
+                solutionFilePath = Files.copy(solutionFilePath, projectFilePath, REPLACE_EXISTING);
+            }
 
             LOG.info("Solution found: {}", solutionFilePath);
             return true;
@@ -126,7 +128,6 @@ public class Generator {
     private boolean solutionNotFound(TestRunner.TestInfo testInfo) {
         return testInfo == null || testInfo.succeeded() != testInfo.found();
     }
-
 
     private static CodeContainer callAssistant(AIAssistant assistant, InputContainer inputContainer, PreviousRunContainer previousRunContainer) {
         CodeContainer response;
