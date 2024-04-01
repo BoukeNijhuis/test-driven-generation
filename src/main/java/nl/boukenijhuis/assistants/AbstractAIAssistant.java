@@ -157,12 +157,13 @@ public abstract class AbstractAIAssistant implements AIAssistant {
             String apiKey = (String) properties.get(propertyPrefix + ".api-key");
             String server = (String) properties.get(propertyPrefix + ".server");
             String url = (String) properties.get(propertyPrefix + ".url");
+            int timeout = Integer.parseInt((String) properties.get(propertyPrefix + ".timeout"));
             return HttpRequest.newBuilder()
                     .uri(new URI(server + url))
                     .header("Content-Type", "application/json")
                     .header("Authorization", "Bearer " + apiKey)
                     .POST(HttpRequest.BodyPublishers.ofString(inputBody))
-                    .timeout(Duration.ofSeconds(60))
+                    .timeout(Duration.ofSeconds(timeout))
                     .build();
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);

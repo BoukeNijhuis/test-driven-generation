@@ -42,6 +42,7 @@ public class OllamaGptIT extends IntegrationTest {
         Properties properties = new Properties();
         properties.setProperty("ollama.server", "http://localhost:8089");
         properties.setProperty("ollama.url", path);
+        properties.setProperty("ollama.timeout", "30");
         var aiAssistant = new Ollama(properties);
 
         CodeContainer response = aiAssistant.call(Path.of("src", "test", "resources", "input", "PrimeNumberGeneratorTest.java"), new PreviousRunContainer());

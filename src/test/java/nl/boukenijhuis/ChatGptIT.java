@@ -43,6 +43,7 @@ public class ChatGptIT extends IntegrationTest {
         properties.setProperty("chatgpt.url", path);
         properties.setProperty("chatgpt.maxTokens", "600");
         properties.setProperty("chatgpt.apiKey", "apiKey");
+        properties.setProperty("chatgpt.timeout", "30");
         var aiAssistant = new ChatGpt(properties);
 
         CodeContainer response = aiAssistant.call(Path.of("src", "test", "resources", "input", "PrimeNumberGeneratorTest.java"), new PreviousRunContainer());
