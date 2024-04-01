@@ -111,7 +111,7 @@ public class Generator {
             Path projectFileParentPath = determineProjectParentFilePath(inputContainer.getInputFile());
             Path projectFilePath = projectFileParentPath.resolve(codeContainer.getFileName());
             // only copy when the project file path exists
-            if (Files.exists(projectFilePath)) {
+            if (Files.exists(projectFileParentPath)) {
                 solutionFilePath = Files.copy(solutionFilePath, projectFilePath, REPLACE_EXISTING);
             }
 

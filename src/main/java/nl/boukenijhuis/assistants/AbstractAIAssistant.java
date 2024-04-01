@@ -81,7 +81,7 @@ public abstract class AbstractAIAssistant implements AIAssistant {
             }
         }
         // no solution found
-        String message = String.format("Could not find a solution after %s internal attempts.", maxInternalAttempts);
+        String message = String.format("Could not find a solution after %s attempts.", maxInternalAttempts);
         throw new RuntimeException(message);
     }
 
@@ -162,7 +162,7 @@ public abstract class AbstractAIAssistant implements AIAssistant {
                     .header("Content-Type", "application/json")
                     .header("Authorization", "Bearer " + apiKey)
                     .POST(HttpRequest.BodyPublishers.ofString(inputBody))
-                    .timeout(Duration.ofSeconds(30))
+                    .timeout(Duration.ofSeconds(60))
                     .build();
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
