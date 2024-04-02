@@ -19,4 +19,14 @@ public class IntegrationTest {
             throw new RuntimeException(String.format("The file '%s' cannot be found in the resources directory.", fileName));
         }
     }
+
+    // use this when you want a request containing a piece of code
+    protected String responseWithCode(String code) throws IOException {
+        return String.format(readFile("stub/ollama/stub_with_input_parameter.json"), convertToJsonValue(code));
+    }
+
+    // escape double qoutes and convert end of lines
+    private String convertToJsonValue(String input) {
+        return input.replace("\n", "\\n").replace("\"", "\\\"");
+    }
 }

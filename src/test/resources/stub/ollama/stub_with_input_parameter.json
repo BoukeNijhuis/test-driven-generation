@@ -1,0 +1,13 @@
+{
+  "model": "llama2",
+  "created_at": "2024-01-17T19:36:01.261603Z",
+  "response": "Here is the request code: ```\n%s```",
+  "done": true,
+  "context": [1, 2, 3],
+  "total_duration": 17668973125,
+  "load_duration": 1038001042,
+  "prompt_eval_count": 144,
+  "prompt_eval_duration": 666876000,
+  "eval_count": 521,
+  "eval_duration": 15957648000
+}
