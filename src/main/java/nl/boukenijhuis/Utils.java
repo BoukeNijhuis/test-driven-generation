@@ -24,6 +24,8 @@ import java.util.StringTokenizer;
 
 public class Utils {
 
+    private static final String CLASSLOADER_NAME = "generator";
+
     public static Path createTemporaryFile(InputContainer inputContainer, CodeContainer response) throws IOException {
         Path tempPackageDirectory = inputContainer.getOutputDirectory();
         tempPackageDirectory = createPackageDirectories(response.getPackageName(), tempPackageDirectory);
@@ -105,10 +107,17 @@ public class Utils {
     // add the compiled files to the classpath
     public static void addToClassLoader(Path parentDirectory) throws MalformedURLException {
         ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
+        URL[] urls = {parentDirectory.toFile().toURL()};
+
+        // check if the current class loader is one created by this program
+        if (CLASSLOADER_NAME.equals(currentClassLoader.getName())) {
+            // if so, use the parent as current class loader
+            // TODO contains the assumption that we only created one class loader
+            currentClassLoader = currentClassLoader.getParent();
+        }
 
         // Use currentClassLoader as parent, so we extend instead of replace
-        URL[] urls = {parentDirectory.toFile().toURL()};
-        ClassLoader newClassLoader = URLClassLoader.newInstance(urls, currentClassLoader);
+        ClassLoader newClassLoader = new URLClassLoader(CLASSLOADER_NAME, urls, currentClassLoader);
 
         // set the new classloader as the current classloader
         Thread.currentThread().setContextClassLoader(newClassLoader);
