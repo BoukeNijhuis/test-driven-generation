@@ -11,6 +11,8 @@ import java.util.Properties;
 
 public class ChatGpt extends AbstractAIAssistant {
 
+    protected String context = "";
+
     public ChatGpt(Properties properties) {
         super(properties);
     }
@@ -23,12 +25,17 @@ public class ChatGpt extends AbstractAIAssistant {
     @Override
     protected String getContent(HttpResponse<String> response) throws JsonProcessingException {
         var responseClass = objectMapper.readValue(response.body(), ChatGptResponse.class);
-        return responseClass.choices().get(0).message().content();
+        String content = responseClass.choices().get(0).message().content();
+        // use the entire context as content
+        this.context = content;
+        return content;
     }
 
     @Override
     protected String createRequestBody(String prompt) throws JsonProcessingException {
-        var messageList = List.of(new ChatGptRequest.MessageDTO("user", prompt));
+        // put context in front of the provided prompt
+        String updatedPrompt = String.format("Previous answer: %s\n\n%s", context, prompt);
+        var messageList = List.of(new ChatGptRequest.MessageDTO("user", updatedPrompt));
         int maxTokens = Integer.parseInt((String) properties.get("chatgpt.maxTokens"));
         var chatGptRequest = new ChatGptRequest(properties.getProperty("chatgpt.model"), messageList, maxTokens);
         return objectMapper.writeValueAsString(chatGptRequest);
