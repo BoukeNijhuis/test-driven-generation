@@ -54,7 +54,13 @@ public abstract class AbstractAIAssistant implements AIAssistant {
 
             LOG.info("Code loop attempt: {}", internalAttempts);
 
-            String prompt = !inputPreviousRun.isBlank() ? getPromptWithError(inputPreviousRun) : getPromptWithFile(testFile);
+            String prompt;
+            if (inputPreviousRun != null && !inputPreviousRun.isBlank()) {
+                prompt = getPromptWithError(inputPreviousRun);
+            } else {
+                prompt = getPromptWithFile(testFile);
+            }
+
             LOG.debug("Prompt: {}", prompt);
 
             String requestBody = createRequestBody(prompt);
@@ -94,7 +100,7 @@ public abstract class AbstractAIAssistant implements AIAssistant {
 
         String prompt = properties.getProperty(getPropertyPrefix() + ".prompt");
         if (prompt == null) {
-            prompt = "You are a professional Java developer. Give me an IMPLEMENTATION that will pass this test. Do not respond with a test. Give me only complete code and no snippets. Include imports and use the right package. %n%n%s";
+            prompt = "You are a professional Java developer. Give me a JAVA IMPLEMENTATION that will pass this test. Do not respond with a test. Give me only complete code and no snippets. Include imports and use the right package. %n%n%s";
         }
         return String.format(prompt, readFile(testFile));
     }
@@ -114,6 +120,7 @@ public abstract class AbstractAIAssistant implements AIAssistant {
 
         List<String> stringList = List.of(
                 "```java(.*?)```",
+                "```Java(.*?)```",
                 "```(.*?)```"
         );
 
@@ -125,6 +132,7 @@ public abstract class AbstractAIAssistant implements AIAssistant {
         }
 
         // answer could be code only
+        content = content.trim();
         if (content.startsWith("package") || content.startsWith("import")) {
             // it is probably code
             return content;

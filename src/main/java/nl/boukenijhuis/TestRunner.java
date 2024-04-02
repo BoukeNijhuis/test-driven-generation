@@ -31,6 +31,11 @@ public class TestRunner {
         // TODO sometimes the test found count is zero, this should be impossible
 
         long testsFoundCount = listener.getSummary().getTestsFoundCount();
+
+        if (testsFoundCount == 0) {
+            throw new RuntimeException("No tests found. This should be impossible. Killing the run, please investigate");
+        }
+
         long testsSucceededCount = listener.getSummary().getTestsSucceededCount();
         var failureList = listener.getSummary().getFailures();
         // TODO handle multiple failures

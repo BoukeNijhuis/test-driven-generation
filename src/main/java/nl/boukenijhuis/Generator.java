@@ -126,7 +126,7 @@ public class Generator {
     }
 
     private boolean solutionNotFound(TestRunner.TestInfo testInfo) {
-        return testInfo == null || testInfo.succeeded() != testInfo.found();
+        return testInfo == null || testInfo.found() == 0 || testInfo.succeeded() != testInfo.found();
     }
 
     private static CodeContainer callAssistant(AIAssistant assistant, InputContainer inputContainer, PreviousRunContainer previousRunContainer) {

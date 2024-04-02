@@ -8,6 +8,7 @@ import nl.boukenijhuis.dto.PreviousRunContainer;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
@@ -50,6 +51,28 @@ public class OllamaGptIT extends IntegrationTest {
         assertEquals("PrimeNumberGenerator.java", response.getFileName());
         assertEquals(2, response.getAttempts());
         assertEquals(List.of(4, 5, 6), aiAssistant.getContext());
+    }
+
+    @Test
+    public void checkForTestsBeingRun() throws IOException, InterruptedException {
+
+        stubFor(post("/api/generate").willReturn(ok(readFile("stub/ollama/stub_with_working_code_container_code.json"))));
+
+        Properties properties = new Properties();
+        properties.setProperty("ollama.server", "http://localhost:8089");
+        properties.setProperty("ollama.url", "/api/generate");
+        properties.setProperty("ollama.timeout", "30");
+
+        Path tempDirectory = Files.createTempDirectory("test");
+        String inputFile = "src/test/resources/input/CodeContainerTest.java";
+        String[] args = {inputFile, tempDirectory.toString()};
+        TestRunner testRunner = new TestRunner();
+        new Generator().run(new Ollama(properties), testRunner, args);
+
+        // check the output of the testrunner
+        TestRunner.TestInfo latestTestInfo = testRunner.getLatestTestInfo();
+        assertEquals(2, latestTestInfo.found());
+        assertEquals(0, latestTestInfo.succeeded());
     }
 
 }

@@ -75,6 +75,7 @@ class GeneratorIT extends IntegrationTest {
         assertEquals(1, latestTestInfo.succeeded());
     }
 
+
     record StubAssistant(String outputFileContent) implements AIAssistant {
 
         @Override
