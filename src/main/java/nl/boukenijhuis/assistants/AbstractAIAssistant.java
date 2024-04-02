@@ -121,6 +121,8 @@ public abstract class AbstractAIAssistant implements AIAssistant {
         List<String> stringList = List.of(
                 "```java(.*?)```",
                 "```Java(.*?)```",
+                "\\[Java\\](.*?)\\[/Java\\]",
+                "\\[Java Code\\](.*?)\\[/Java Code\\]",
                 "```(.*?)```"
         );
 
