@@ -74,7 +74,7 @@ public abstract class AbstractAIAssistant implements AIAssistant {
             if (javaContent != null) {
 
                 // we do not want a test, but an implementation
-                if (javaContent.contains("@Test")) {
+                if (javaContent.contains("@Test") || javaContent.contains("@org.junit.jupiter.api.Test")) {
                     inputPreviousRun = "You gave a test, but I asked for production Java code!";
                     continue;
                 }
@@ -85,6 +85,9 @@ public abstract class AbstractAIAssistant implements AIAssistant {
                     // do nothing == continue
                 }
             }
+
+            // TODO: should the context be cleared if no java is found?
+
         }
         // no solution found
         String message = String.format("Could not find a solution after %s attempts.", maxInternalAttempts);

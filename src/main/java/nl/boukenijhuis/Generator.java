@@ -74,10 +74,13 @@ public class Generator {
             solutionFilePath = createTemporaryFile(inputContainer, codeContainer);
 
             // copy the test file to the temp directory
-            Path testFileNamePath = inputContainer.getInputFile().getFileName();
-            String packageDirectories = codeContainer.getPackageName().replace(".", "/");
-            tempTestFilePath = inputContainer.getOutputDirectory().resolve(packageDirectories).resolve(testFileNamePath);
-            Files.copy(inputContainer.getInputFile(), tempTestFilePath, REPLACE_EXISTING);
+            try {
+                // test package directories do not have to equal the implementation package directories
+                CodeContainer testCodeContainer = new CodeContainer(Files.readString(inputContainer.getInputFile()));
+                tempTestFilePath = Utils.createTemporaryFile(inputContainer, testCodeContainer);
+            } catch (ClassNameNotFoundException e) {
+                throw new RuntimeException(e);
+            }
 
             // compile the solution file and the test source file
             var compilationContainer = compileFiles(dependencies, solutionFilePath, tempTestFilePath);

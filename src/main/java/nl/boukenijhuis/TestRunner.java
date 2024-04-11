@@ -1,6 +1,8 @@
 package nl.boukenijhuis;
 
 import nl.boukenijhuis.dto.InputContainer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
@@ -16,6 +18,8 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 // TODO make this class reponsible for adding it own library to the classpath
 public class TestRunner {
 
+    private static final Logger LOG = LogManager.getLogger(Generator.class);
+
     private SummaryGeneratingListener listener = new SummaryGeneratingListener();
 
     private TestInfo latestTestInfo = null;
@@ -28,14 +32,7 @@ public class TestRunner {
         launcher.registerTestExecutionListeners(listener);
         launcher.execute(request);
 
-        // TODO sometimes the test found count is zero, this should be impossible
-
         long testsFoundCount = listener.getSummary().getTestsFoundCount();
-
-        if (testsFoundCount == 0) {
-            throw new RuntimeException("No tests found. This should be impossible. Killing the run, please investigate");
-        }
-
         long testsSucceededCount = listener.getSummary().getTestsSucceededCount();
         var failureList = listener.getSummary().getFailures();
         // TODO handle multiple failures

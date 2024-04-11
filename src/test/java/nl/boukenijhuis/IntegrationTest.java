@@ -25,6 +25,11 @@ public class IntegrationTest {
         return String.format(readFile("stub/ollama/stub_with_input_parameter.json"), convertToJsonValue(code));
     }
 
+    // use this when you want a request containing a piece of text
+    protected String responseWithText(String text) throws IOException {
+        return String.format(readFile("stub/ollama/stub_with_empty_response.json"), convertToJsonValue(text));
+    }
+
     // escape double qoutes and convert end of lines
     private String convertToJsonValue(String input) {
         return input.replace("\n", "\\n").replace("\"", "\\\"");
