@@ -95,7 +95,7 @@ public abstract class AbstractAIAssistant implements AIAssistant {
     }
 
     private String getPromptWithError(String inputPreviousRun) {
-        return "Provide a new implementation that fixes the following error: " + inputPreviousRun;
+        return "Provide a new COMPLETE implementation that fixes the following error: " + inputPreviousRun;
     }
 
     // TODO per assistant?
