@@ -41,26 +41,10 @@ public class RetriesIT extends IntegrationTest {
     @Test
     public void testCorrectClassLoading() throws IOException, InterruptedException {
 
-        // first reply
-        stubFor(post(path)
-                .inScenario(RETRY_SCENARIO)
-                .whenScenarioStateIs(Scenario.STARTED)
-                .willReturn(ok(readFile("stub/ollama/stub_without_code.json")))
-                .willSetStateTo(SECOND_REPLY));
-
-        // second reply
-        stubFor(post(path)
-                .inScenario(RETRY_SCENARIO)
-                .whenScenarioStateIs(SECOND_REPLY)
-                .willReturn(ok(readFile("stub/ollama/stub_with_faulty_code.json")))
-                .willSetStateTo(THIRD_REPLY));
-
-        // third reply
-        stubFor(post(path)
-                .inScenario(RETRY_SCENARIO)
-                .whenScenarioStateIs(THIRD_REPLY)
-                .willReturn(ok(readFile("stub/ollama/stub_with_working_code.json"))));
-
+        String firstResponse = responseWithCode("Error");
+        String secondResponse = responseWithCode(readFile("stub/ollama/code/primenumber/PrimeNumberGenerator_faulty.java"));
+        String thirdResponse = responseWithCode(readFile("stub/ollama/code/primenumber/PrimeNumberGenerator_correct.java"));
+        threeStubs(firstResponse, secondResponse, thirdResponse);
 
         // TODO can I fix this without creating a temp directory in this test?
         Path tempDirectory = Files.createTempDirectory("test");
@@ -83,29 +67,10 @@ public class RetriesIT extends IntegrationTest {
 
     @Test
     public void testImplementationReloading() throws IOException, InterruptedException {
-        String firstResponse = responseWithCode(readFile("stub/ollama/code/Uppercaser0.java"));
-        String secondResponse = responseWithCode(readFile("stub/ollama/code/Uppercaser1.java"));
-        String thirdResponse = responseWithCode(readFile("stub/ollama/code/Uppercaser2.java"));
-
-        // first reply
-        stubFor(post(path)
-                .inScenario(RETRY_SCENARIO)
-                .whenScenarioStateIs(Scenario.STARTED)
-                .willReturn(ok(firstResponse))
-                .willSetStateTo(SECOND_REPLY));
-
-        // second reply
-        stubFor(post(path)
-                .inScenario(RETRY_SCENARIO)
-                .whenScenarioStateIs(SECOND_REPLY)
-                .willReturn(ok(secondResponse))
-                .willSetStateTo(THIRD_REPLY));
-
-        // third reply
-        stubFor(post(path)
-                .inScenario(RETRY_SCENARIO)
-                .whenScenarioStateIs(THIRD_REPLY)
-                .willReturn(ok(thirdResponse)));
+        String firstResponse = responseWithCode(readFile("stub/ollama/code/uppercaser/Uppercaser0.java"));
+        String secondResponse = responseWithCode(readFile("stub/ollama/code/uppercaser/Uppercaser1.java"));
+        String thirdResponse = responseWithCode(readFile("stub/ollama/code/uppercaser/Uppercaser2.java"));
+        threeStubs(firstResponse, secondResponse, thirdResponse);
 
         // TODO can I fix this without creating a temp directory in this test?
         Path tempDirectory = Files.createTempDirectory("test");
@@ -118,6 +83,28 @@ public class RetriesIT extends IntegrationTest {
         TestRunner.TestInfo latestTestInfo = testRunner.getLatestTestInfo();
         assertEquals(3, latestTestInfo.found());
         assertEquals(3, latestTestInfo.succeeded());
+    }
+
+    private void threeStubs(String first, String second, String third) throws IOException {
+        // first reply
+        stubFor(post(path)
+                .inScenario(RETRY_SCENARIO)
+                .whenScenarioStateIs(Scenario.STARTED)
+                .willReturn(ok(first))
+                .willSetStateTo(SECOND_REPLY));
+
+        // second reply
+        stubFor(post(path)
+                .inScenario(RETRY_SCENARIO)
+                .whenScenarioStateIs(SECOND_REPLY)
+                .willReturn(ok(second))
+                .willSetStateTo(THIRD_REPLY));
+
+        // third reply
+        stubFor(post(path)
+                .inScenario(RETRY_SCENARIO)
+                .whenScenarioStateIs(THIRD_REPLY)
+                .willReturn(ok(third)));
     }
 
 }

@@ -11,7 +11,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -61,13 +60,11 @@ public class OllamaTest extends Ollama {
 
         @Override
         public java.lang.String body() {
-            String fileName = "stub/ollama/stub_without_code.json";
-            try (var in = getClass().getResourceAsStream("/" + fileName)) {
-                return new String(in.readAllBytes(), StandardCharsets.UTF_8);
-            } catch (IOException | NullPointerException e) {
-                throw new RuntimeException(String.format("The file '%s' cannot be found in the resources directory.", fileName));
+            try {
+                return IntegrationTest.responseWithCode("Error");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-
         }
 
         @Override

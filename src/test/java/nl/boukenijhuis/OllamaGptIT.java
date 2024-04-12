@@ -31,14 +31,14 @@ public class OllamaGptIT extends IntegrationTest {
         stubFor(post(path)
                 .inScenario(RETRY_SCENARIO)
                 .whenScenarioStateIs(Scenario.STARTED)
-                .willReturn(ok(readFile("stub/ollama/stub_without_code.json")))
+                .willReturn(ok(responseWithCode("Error")))
                 .willSetStateTo(SECOND_REPLY));
 
         // second reply
         stubFor(post(path)
                 .inScenario(RETRY_SCENARIO)
                 .whenScenarioStateIs(SECOND_REPLY)
-                .willReturn(ok(readFile("stub/ollama/stub_with_working_code.json"))));
+                .willReturn(ok(responseWithCode(readFile("stub/ollama/code/primenumber/PrimeNumberGenerator_correct.java")))));
 
         Properties properties = new Properties();
         properties.setProperty("ollama.server", "http://localhost:8089");
@@ -50,13 +50,14 @@ public class OllamaGptIT extends IntegrationTest {
         assertEquals(readFile("expected/ollama/PrimeNumberGenerator.java"), response.getContent());
         assertEquals("PrimeNumberGenerator.java", response.getFileName());
         assertEquals(2, response.getAttempts());
-        assertEquals(List.of(4, 5, 6), aiAssistant.getContext());
+        assertEquals(List.of(1, 2, 3), aiAssistant.getContext());
     }
 
     @Test
     public void checkForTestsBeingRun() throws IOException, InterruptedException {
 
-        stubFor(post("/api/generate").willReturn(ok(readFile("stub/ollama/stub_with_working_code_container_code.json"))));
+        String body = responseWithCode(readFile("stub/ollama/code/codecontainer/CodeContainer.java"));
+        stubFor(post("/api/generate").willReturn(ok(body)));
 
         Properties properties = new Properties();
         properties.setProperty("ollama.server", "http://localhost:8089");

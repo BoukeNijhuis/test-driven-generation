@@ -12,8 +12,8 @@ public class IntegrationTest {
      * @return the contents of the file as a string
      * @throws IOException if an I/O error occurs
      */
-    protected String readFile(String fileName) throws IOException {
-        try (var in = getClass().getResourceAsStream("/" + fileName)) {
+    protected static String readFile(String fileName) throws IOException {
+        try (var in = IntegrationTest.class.getResourceAsStream("/" + fileName)) {
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         } catch (NullPointerException e) {
             throw new RuntimeException(String.format("The file '%s' cannot be found in the resources directory.", fileName));
@@ -21,8 +21,8 @@ public class IntegrationTest {
     }
 
     // use this when you want a request containing a piece of code
-    protected String responseWithCode(String code) throws IOException {
-        return String.format(readFile("stub/ollama/stub_with_input_parameter.json"), convertToJsonValue(code));
+    public static String responseWithCode(String code) throws IOException {
+        return java.lang.String.format(readFile("stub/ollama/stub_with_input_parameter.json"), convertToJsonValue(code));
     }
 
     // use this when you want a request containing a piece of text
@@ -31,7 +31,7 @@ public class IntegrationTest {
     }
 
     // escape double qoutes and convert end of lines
-    private String convertToJsonValue(String input) {
+    private static String convertToJsonValue(String input) {
         return input.replace("\n", "\\n").replace("\"", "\\\"");
     }
 }
