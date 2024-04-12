@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Properties;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
@@ -39,7 +40,7 @@ public class RetriesIT extends IntegrationTest {
      * the old class loader is not used anymore.
      */
     @Test
-    public void testCorrectClassLoading() throws IOException, InterruptedException {
+    public void testCorrectClassLoading() throws IOException {
 
         String firstResponse = responseWithCode("Error");
         String secondResponse = responseWithCode(readFile("stub/ollama/code/primenumber/PrimeNumberGenerator_faulty.java"));
@@ -66,7 +67,7 @@ public class RetriesIT extends IntegrationTest {
     }
 
     @Test
-    public void testImplementationReloading() throws IOException, InterruptedException {
+    public void testImplementationReloading() throws IOException {
         String firstResponse = responseWithCode(readFile("stub/ollama/code/uppercaser/Uppercaser0.java"));
         String secondResponse = responseWithCode(readFile("stub/ollama/code/uppercaser/Uppercaser1.java"));
         String thirdResponse = responseWithCode(readFile("stub/ollama/code/uppercaser/Uppercaser2.java"));
@@ -78,6 +79,35 @@ public class RetriesIT extends IntegrationTest {
         String[] args = {inputFile, tempDirectory.toString()};
         TestRunner testRunner = new TestRunner();
         new Generator().run(new Ollama(properties), testRunner, args);
+
+        // check the output of the testrunner
+        TestRunner.TestInfo latestTestInfo = testRunner.getLatestTestInfo();
+        assertEquals(3, latestTestInfo.found());
+        assertEquals(3, latestTestInfo.succeeded());
+    }
+
+    // this test will fail if an existing implementation is already on the classpath
+    @Test
+    public void testImplementationReloadingWhileThereIsAlreadyAnExistingImplementation() throws IOException {
+        String firstResponse = responseWithCode(readFile("stub/ollama/code/uppercaser/Uppercaser0.java"));
+        String secondResponse = responseWithCode(readFile("stub/ollama/code/uppercaser/Uppercaser1.java"));
+        String thirdResponse = responseWithCode(readFile("stub/ollama/code/uppercaser/Uppercaser2.java"));
+        threeStubs(firstResponse, secondResponse, thirdResponse);
+
+        // create a class file in the external classpath
+        Path externalClassPath = Files.createTempDirectory("externalClassPath");
+        var existingImpl = Path.of("/Users/boukenijhuis/git/test-driven-generation/src/test/resources/stub/ollama/code/uppercaser/externalClassPath/Uppercaser.java");
+        existingImpl = Files.copy(existingImpl, externalClassPath.resolve("Uppercaser.java"));
+        Utils.compileFiles(List.of(), existingImpl);
+        String externalClassPathString = externalClassPath.toString();
+        List<String> inputClassPathStringList = List.of(externalClassPathString);
+
+        // TODO can I fix this without creating a temp directory in this test?
+        Path tempDirectory = Files.createTempDirectory("test");
+        String inputFile = "src/test/resources/input/UppercaserTest.java";
+        String[] args = {inputFile, tempDirectory.toString()};
+        TestRunner testRunner = new TestRunner();
+        new Generator(inputClassPathStringList).run(new Ollama(properties), testRunner, args);
 
         // check the output of the testrunner
         TestRunner.TestInfo latestTestInfo = testRunner.getLatestTestInfo();

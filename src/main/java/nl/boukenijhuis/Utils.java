@@ -103,11 +103,15 @@ public class Utils {
         fileManager.close();
     }
 
-
     // add the compiled files to the classpath
-    public static void addToClassLoader(Path parentDirectory) throws MalformedURLException {
+    public static void addToClassLoader(Path parentDirectory, List<String> dependencies) throws MalformedURLException {
+        var urlList = new ArrayList<URL>();
+        // the parent directory has to be first in the list (otherwise old implementations could be used)
+        urlList.add(new URL("file://" + parentDirectory + "/"));
+        urlList.addAll(getUrlList(dependencies));
+        URL[] urlArray = urlList.toArray(new URL[0]);
+
         ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
-        URL[] urls = {parentDirectory.toFile().toURL()};
 
         // check if the current class loader is one created by this program
         if (CLASSLOADER_NAME.equals(currentClassLoader.getName())) {
@@ -117,10 +121,26 @@ public class Utils {
         }
 
         // Use currentClassLoader as parent, so we extend instead of replace
-        ClassLoader newClassLoader = new URLClassLoader(CLASSLOADER_NAME, urls, currentClassLoader);
+        ClassLoader newClassLoader = new URLClassLoader(CLASSLOADER_NAME, urlArray, currentClassLoader);
 
         // set the new classloader as the current classloader
         Thread.currentThread().setContextClassLoader(newClassLoader);
+    }
+
+    private static List<URL> getUrlList(List<String> dependencies) {
+        // directories NEED a slash at the end
+        return dependencies.stream().map(x -> {
+            try {
+                if (x.endsWith(".jar")) {
+                    return new URL("file://" + x);
+                } else {
+                    // for directories
+                    return new URL("file://" + x + "/");
+                }
+            } catch (MalformedURLException ex) {
+                throw new RuntimeException(ex);
+            }
+        }).toList();
     }
 
     // returns the location where to solution should go (based upon the input file)

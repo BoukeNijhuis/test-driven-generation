@@ -90,8 +90,8 @@ public class Generator {
                 continue;
             }
 
-            // add all compiled Java files to class loader
-            addToClassLoader(inputContainer.getOutputDirectory());
+            // add all compiled Java files to class loader (including the dependencies)
+            addToClassLoader(inputContainer.getOutputDirectory(), this.dependencies);
 
             // run the test
             testInfo = testRunner.runTestFile(inputContainer);
