@@ -47,7 +47,6 @@ public class RetriesIT extends IntegrationTest {
         String thirdResponse = responseWithCode(readFile("stub/ollama/code/primenumber/PrimeNumberGenerator_correct.java"));
         threeStubs(firstResponse, secondResponse, thirdResponse);
 
-        // TODO can I fix this without creating a temp directory in this test?
         Path tempDirectory = Files.createTempDirectory("test");
         String inputFile = "src/test/resources/input/PrimeNumberGeneratorTest.java";
         String[] args = {"--test-file", inputFile, "--working-directory",  tempDirectory.toString()};
@@ -73,7 +72,6 @@ public class RetriesIT extends IntegrationTest {
         String thirdResponse = responseWithCode(readFile("stub/ollama/code/uppercaser/Uppercaser2.java"));
         threeStubs(firstResponse, secondResponse, thirdResponse);
 
-        // TODO can I fix this without creating a temp directory in this test?
         Path tempDirectory = Files.createTempDirectory("test");
         String inputFile = "src/test/resources/input/UppercaserTest.java";
         String[] args = {"--test-file", inputFile, "--working-directory",  tempDirectory.toString()};
@@ -102,7 +100,6 @@ public class RetriesIT extends IntegrationTest {
         String externalClassPathString = externalClassPath.toString();
         List<String> inputClassPathStringList = List.of(externalClassPathString);
 
-        // TODO can I fix this without creating a temp directory in this test?
         Path tempDirectory = Files.createTempDirectory("test");
         String inputFile = "src/test/resources/input/UppercaserTest.java";
         String[] args = {"--test-file", inputFile, "--working-directory",  tempDirectory.toString()};
