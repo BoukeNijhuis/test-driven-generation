@@ -59,7 +59,7 @@ class GeneratorIT extends IntegrationTest {
 
     public void happyFlow(String packageName, String inputFile, String outputFileName, String outputFileContent) throws IOException {
         Path tempDirectory = Files.createTempDirectory("test");
-        String[] args = {inputFile, tempDirectory.toString()};
+        String[] args = {"--test-file", inputFile, "--working-directory", tempDirectory.toString()};
         TestRunner testRunner = new TestRunner();
         new Generator().run(new StubAssistant(outputFileContent), testRunner, args);
 

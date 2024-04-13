@@ -50,7 +50,7 @@ public class RetriesIT extends IntegrationTest {
         // TODO can I fix this without creating a temp directory in this test?
         Path tempDirectory = Files.createTempDirectory("test");
         String inputFile = "src/test/resources/input/PrimeNumberGeneratorTest.java";
-        String[] args = {inputFile, tempDirectory.toString()};
+        String[] args = {"--test-file", inputFile, "--working-directory",  tempDirectory.toString()};
         TestRunner testRunner = new TestRunner();
         new Generator().run(new Ollama(properties), testRunner, args);
 
@@ -76,7 +76,7 @@ public class RetriesIT extends IntegrationTest {
         // TODO can I fix this without creating a temp directory in this test?
         Path tempDirectory = Files.createTempDirectory("test");
         String inputFile = "src/test/resources/input/UppercaserTest.java";
-        String[] args = {inputFile, tempDirectory.toString()};
+        String[] args = {"--test-file", inputFile, "--working-directory",  tempDirectory.toString()};
         TestRunner testRunner = new TestRunner();
         new Generator().run(new Ollama(properties), testRunner, args);
 
@@ -105,7 +105,7 @@ public class RetriesIT extends IntegrationTest {
         // TODO can I fix this without creating a temp directory in this test?
         Path tempDirectory = Files.createTempDirectory("test");
         String inputFile = "src/test/resources/input/UppercaserTest.java";
-        String[] args = {inputFile, tempDirectory.toString()};
+        String[] args = {"--test-file", inputFile, "--working-directory",  tempDirectory.toString()};
         TestRunner testRunner = new TestRunner();
         new Generator(inputClassPathStringList).run(new Ollama(properties), testRunner, args);
 

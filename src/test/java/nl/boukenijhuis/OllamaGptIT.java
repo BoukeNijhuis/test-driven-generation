@@ -66,7 +66,7 @@ public class OllamaGptIT extends IntegrationTest {
 
         Path tempDirectory = Files.createTempDirectory("test");
         String inputFile = "src/test/resources/input/CodeContainerTest.java";
-        String[] args = {inputFile, tempDirectory.toString()};
+        String[] args = {"--test-file", inputFile, "--working-directory",  tempDirectory.toString()};
         TestRunner testRunner = new TestRunner();
         new Generator().run(new Ollama(properties), testRunner, args);
 

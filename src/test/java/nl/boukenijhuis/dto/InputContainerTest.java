@@ -12,17 +12,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class InputContainerTest {
 
     @Test
-    public void throwErrorWhenNoArguments() {
-        RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
-            InputContainer.build(new String[0]);
-        });
-        assertEquals(runtimeException.getMessage(), "No JUnit 5 test file provided as command-line argument.");
-    }
-
-    @Test
     public void throwErrorWhenFirstArgumentsIsNoFile() {
         RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
-            InputContainer.build(new String[] { "non-existent-file" });
+            ArgumentContainer argumentContainer = new ArgumentContainer(new String[] { "non-existent-file" });
+            InputContainer.build(argumentContainer);
         });
         assertEquals(runtimeException.getMessage(), "File [non-existent-file] is not a file.");
     }
@@ -30,7 +23,9 @@ class InputContainerTest {
     @Test
     public void throwErrorWhenSecondArgumentsIsNoDirectory() {
         RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
-            InputContainer.build(new String[] { "src/test/resources/input/OddEvenTest.java", "non-existent-directory" });
+            String[] args = {"--test-file", "src/test/resources/input/OddEvenTest.java", "--working-directory", "non-existent-directory"};
+            ArgumentContainer argumentContainer = new ArgumentContainer(args);
+            InputContainer.build(argumentContainer);
         });
         assertEquals(runtimeException.getMessage(), "Directory [non-existent-directory] is not an empty directory.");
 
@@ -39,7 +34,9 @@ class InputContainerTest {
     @Test
     public void throwErrorWhenSecondArgumentsIsNotAnEmptyDirectory() {
         RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
-            InputContainer.build(new String[] { "src/test/resources/input/OddEvenTest.java", "src/test/resources/input" });
+            String[] args = {"--test-file", "src/test/resources/input/OddEvenTest.java", "--working-directory", "src/test/resources/input"};
+            ArgumentContainer argumentContainer = new ArgumentContainer(args);
+            InputContainer.build(argumentContainer);
         });
         assertEquals(runtimeException.getMessage(), "Directory [src/test/resources/input] is not an empty directory.");
 
@@ -47,7 +44,8 @@ class InputContainerTest {
 
     @Test
     public void happyFlow() throws IOException {
-        InputContainer inputContainer = InputContainer.build(new String[]{"src/test/resources/input/OddEvenTest.java"});
+        ArgumentContainer argumentContainer = new ArgumentContainer(new String[]{"src/test/resources/input/OddEvenTest.java"});
+        InputContainer inputContainer = InputContainer.build(argumentContainer);
         assertTrue(Files.isDirectory(inputContainer.getOutputDirectory()));
     }
 

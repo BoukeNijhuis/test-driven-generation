@@ -17,25 +17,24 @@ public final class InputContainer {
         this.outputDirectory = outputDirectory;
     }
 
-    public static InputContainer build(String[] args) throws IOException {
-        // check the input
-        if (args.length < 1) {
-            throw new RuntimeException("No JUnit 5 test file provided as command-line argument.");
-        }
+    public static InputContainer build(ArgumentContainer argumentContainer) throws IOException {
+
 
         // check if the first argument is a file
-        Path inputFile = Path.of(args[0]);
+        String testFile = argumentContainer.getTestFile();
+        Path inputFile = Path.of(testFile);
         if (!Files.isRegularFile(inputFile)) {
-            throw new RuntimeException("File [" + args[0] + "] is not a file.");
+            throw new RuntimeException("File [" + testFile + "] is not a file.");
         }
 
         // check / create the output directory
+        String workingDirectory = argumentContainer.getWorkingDirectory();
         Path outputDirectory;
-        if (args.length == 2) {
-            outputDirectory = Path.of(args[1]);
+        if (workingDirectory != null) {
+            outputDirectory = Path.of(workingDirectory);
 
             if (!isAnEmptyDirectory(outputDirectory)) {
-                throw new RuntimeException("Directory [" + args[1] + "] is not an empty directory.");
+                throw new RuntimeException("Directory [" + workingDirectory + "] is not an empty directory.");
             }
         } else {
             // create a temp dir

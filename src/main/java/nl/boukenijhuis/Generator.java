@@ -2,6 +2,7 @@ package nl.boukenijhuis;
 
 import nl.boukenijhuis.assistants.AIAssistant;
 import nl.boukenijhuis.assistants.ollama.Ollama;
+import nl.boukenijhuis.dto.ArgumentContainer;
 import nl.boukenijhuis.dto.CodeContainer;
 import nl.boukenijhuis.dto.InputContainer;
 import nl.boukenijhuis.dto.PreviousRunContainer;
@@ -21,7 +22,6 @@ import static nl.boukenijhuis.Utils.compileFiles;
 import static nl.boukenijhuis.Utils.createTemporaryFile;
 import static nl.boukenijhuis.Utils.determineProjectParentFilePath;
 
-// TODO rename project to test-driven-generator?
 public class Generator {
 
     private static final Logger LOG = LogManager.getLogger(Generator.class);
@@ -51,8 +51,11 @@ public class Generator {
     // returns true when a solution is found, false otherwise (used in maven plugin)
     public boolean run(AIAssistant assistant, TestRunner testRunner, String[] args) throws IOException {
 
+        // parse the command line arguments
+        ArgumentContainer argumentContainer = new ArgumentContainer(args);
+
         // sanitize and provide default inputs
-        InputContainer inputContainer = InputContainer.build(args);
+        InputContainer inputContainer = InputContainer.build(argumentContainer);
 
         // object for storing test information
         TestRunner.TestInfo testInfo = null;
