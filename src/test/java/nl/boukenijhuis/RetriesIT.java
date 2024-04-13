@@ -3,6 +3,7 @@ package nl.boukenijhuis;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import nl.boukenijhuis.assistants.ollama.Ollama;
+import nl.boukenijhuis.dto.ArgumentContainer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -51,7 +52,7 @@ public class RetriesIT extends IntegrationTest {
         String inputFile = "src/test/resources/input/PrimeNumberGeneratorTest.java";
         String[] args = {"--test-file", inputFile, "--working-directory",  tempDirectory.toString()};
         TestRunner testRunner = new TestRunner();
-        new Generator().run(new Ollama(properties), testRunner, args);
+        new Generator().run(new Ollama(properties), testRunner, new ArgumentContainer(args));
 
         // check if the file is created with correct content
         Path outputFilePath = tempDirectory.resolve("example").resolve("PrimeNumberGenerator.java");
@@ -76,7 +77,7 @@ public class RetriesIT extends IntegrationTest {
         String inputFile = "src/test/resources/input/UppercaserTest.java";
         String[] args = {"--test-file", inputFile, "--working-directory",  tempDirectory.toString()};
         TestRunner testRunner = new TestRunner();
-        new Generator().run(new Ollama(properties), testRunner, args);
+        new Generator().run(new Ollama(properties), testRunner, new ArgumentContainer(args));
 
         // check the output of the testrunner
         TestRunner.TestInfo latestTestInfo = testRunner.getLatestTestInfo();
@@ -104,7 +105,7 @@ public class RetriesIT extends IntegrationTest {
         String inputFile = "src/test/resources/input/UppercaserTest.java";
         String[] args = {"--test-file", inputFile, "--working-directory",  tempDirectory.toString()};
         TestRunner testRunner = new TestRunner();
-        new Generator(inputClassPathStringList).run(new Ollama(properties), testRunner, args);
+        new Generator(inputClassPathStringList).run(new Ollama(properties), testRunner, new ArgumentContainer(args));
 
         // check the output of the testrunner
         TestRunner.TestInfo latestTestInfo = testRunner.getLatestTestInfo();

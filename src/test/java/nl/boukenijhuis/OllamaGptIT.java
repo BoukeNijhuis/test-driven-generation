@@ -3,6 +3,7 @@ package nl.boukenijhuis;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import nl.boukenijhuis.assistants.ollama.Ollama;
+import nl.boukenijhuis.dto.ArgumentContainer;
 import nl.boukenijhuis.dto.CodeContainer;
 import nl.boukenijhuis.dto.PreviousRunContainer;
 import org.junit.jupiter.api.Test;
@@ -68,7 +69,7 @@ public class OllamaGptIT extends IntegrationTest {
         String inputFile = "src/test/resources/input/CodeContainerTest.java";
         String[] args = {"--test-file", inputFile, "--working-directory",  tempDirectory.toString()};
         TestRunner testRunner = new TestRunner();
-        new Generator().run(new Ollama(properties), testRunner, args);
+        new Generator().run(new Ollama(properties), testRunner, new ArgumentContainer(args));
 
         // check the output of the testrunner
         TestRunner.TestInfo latestTestInfo = testRunner.getLatestTestInfo();

@@ -1,6 +1,7 @@
 package nl.boukenijhuis;
 
 import nl.boukenijhuis.assistants.AIAssistant;
+import nl.boukenijhuis.dto.ArgumentContainer;
 import nl.boukenijhuis.dto.CodeContainer;
 import nl.boukenijhuis.dto.PreviousRunContainer;
 import org.junit.jupiter.api.Test;
@@ -61,7 +62,7 @@ class GeneratorIT extends IntegrationTest {
         Path tempDirectory = Files.createTempDirectory("test");
         String[] args = {"--test-file", inputFile, "--working-directory", tempDirectory.toString()};
         TestRunner testRunner = new TestRunner();
-        new Generator().run(new StubAssistant(outputFileContent), testRunner, args);
+        new Generator().run(new StubAssistant(outputFileContent), testRunner, new ArgumentContainer(args));
 
         // check if the file is created with correct content
         String packageDirectories = packageName.replace(".", "/");

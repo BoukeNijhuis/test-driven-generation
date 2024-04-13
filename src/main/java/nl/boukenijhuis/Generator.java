@@ -41,18 +41,18 @@ public class Generator {
             Properties properties = new Properties();
             properties.load(Generator.class.getResourceAsStream("/test-driven-generation.properties"));
 
+            // parse the command line arguments
+            ArgumentContainer argumentContainer = new ArgumentContainer(args);
+
             // start a generator and inject an AI assistant
-            new Generator().run(new Ollama(properties), new TestRunner(), args);
+            new Generator().run(new Ollama(properties), new TestRunner(), argumentContainer);
         } catch (Exception e) {
             LOG.info(e);
         }
     }
 
     // returns true when a solution is found, false otherwise (used in maven plugin)
-    public boolean run(AIAssistant assistant, TestRunner testRunner, String[] args) throws IOException {
-
-        // parse the command line arguments
-        ArgumentContainer argumentContainer = new ArgumentContainer(args);
+    public boolean run(AIAssistant assistant, TestRunner testRunner, ArgumentContainer argumentContainer) throws IOException {
 
         // sanitize and provide default inputs
         InputContainer inputContainer = InputContainer.build(argumentContainer);
