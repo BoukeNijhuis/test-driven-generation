@@ -1,6 +1,7 @@
 package nl.boukenijhuis;
 
 import nl.boukenijhuis.assistants.AIAssistant;
+import nl.boukenijhuis.assistants.chatgpt.ChatGpt;
 import nl.boukenijhuis.assistants.ollama.Ollama;
 import nl.boukenijhuis.dto.ArgumentContainer;
 import nl.boukenijhuis.dto.CodeContainer;
@@ -41,13 +42,41 @@ public class Generator {
             Properties properties = new Properties();
             properties.load(Generator.class.getResourceAsStream("/test-driven-generation.properties"));
 
+            // read the OpenAI API from the environment
+            String openAIApiKey = System.getenv("OPENAI_API_KEY");
+            if (openAIApiKey != null) {
+                properties.setProperty("chatgpt.api-key", openAIApiKey);
+            }
+
             // parse the command line arguments
             ArgumentContainer argumentContainer = new ArgumentContainer(args);
 
-            // start a generator and inject an AI assistant
-            new Generator().run(new Ollama(properties), new TestRunner(), argumentContainer);
+            // determine the family
+            String family = argumentContainer.getFamily();
+            if (family == null) {
+                family = "ollama";
+            }
+
+            // update the properties model is provided
+            String model = argumentContainer.getModel();
+            if (model != null) {
+                properties.setProperty(family + ".model", model);
+            }
+
+            // create the assistant
+            AIAssistant aiAssistant;
+            if (family.equalsIgnoreCase("chatgpt")) {
+                aiAssistant = new ChatGpt(properties);
+            }
+            else {
+                aiAssistant = new Ollama(properties);
+            }
+
+            // start a generator
+            new Generator().run(aiAssistant, new TestRunner(), argumentContainer);
         } catch (Exception e) {
             LOG.info(e);
+            e.printStackTrace();
         }
     }
 
