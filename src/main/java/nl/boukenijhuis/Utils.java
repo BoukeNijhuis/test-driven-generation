@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -77,7 +78,8 @@ public class Utils {
         // build a classpath from the current classpath and given dependencies
         String dependenciesString = String.join(":", dependencies);
         String classPath = System.getProperty("java.class.path") + ":" + dependenciesString;
-        List<String> optionList = new ArrayList<String>(Arrays.asList("-classpath", classPath));
+        // -parameters is for Spring Boot reflection
+        List<String> optionList = new ArrayList<String>(Arrays.asList("-classpath", classPath, "-parameters"));
 
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
@@ -150,5 +152,24 @@ public class Utils {
         // misses the following case: "/test$"
         projectPathAsString = projectPathAsString.replaceAll("/test$", "/main");
         return Path.of(projectPathAsString);
+    }
+
+    // deletes all files (not directories) in a directory and its sub-directories
+    public static void purgeDirectory(Path dir) {
+        // safety check: only do this when the path starts with '/val/folders'
+        if (dir.toString().startsWith("/var/folders")) {
+            try {
+                Files.walk(dir)
+                        .sorted(Comparator.reverseOrder())
+                        // do not delete the given dir
+                        .filter(x -> !x.equals(dir))
+                        .map(Path::toFile)
+                        .forEach(File::delete);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            throw new RuntimeException("!!! Trying to recursively delete this path: " + dir);
+        }
     }
 }

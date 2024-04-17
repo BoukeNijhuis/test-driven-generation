@@ -38,6 +38,8 @@ public class Generator {
 
     public static void main(String[] args) {
         try {
+            // TODO the properties argument container should be abstracted away (and reused in the maven plugin)
+
             // read the properties
             Properties properties = new Properties();
             properties.load(Generator.class.getResourceAsStream("/test-driven-generation.properties"));
@@ -98,6 +100,9 @@ public class Generator {
 
         do {
             LOG.info("Test loop attempt: {}", ++externalAttempts);
+
+            // clean up the temp folder (this could be the nth attempt)
+            Utils.purgeDirectory(inputContainer.getOutputDirectory());
 
             // get solution filename and content
             codeContainer = callAssistant(assistant, inputContainer, previousRunContainer);
