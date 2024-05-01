@@ -95,7 +95,7 @@ public abstract class AbstractAIAssistant implements AIAssistant {
     }
 
     private String getPromptWithError(String inputPreviousRun) {
-        return "Provide a new COMPLETE implementation that fixes the following error: " + inputPreviousRun;
+        return "Provide a new SINGLE FILE COMPLETE implementation that fixes the following error: " + inputPreviousRun;
     }
 
     // TODO per assistant?
@@ -103,7 +103,7 @@ public abstract class AbstractAIAssistant implements AIAssistant {
 
         String prompt = properties.getProperty(getPropertyPrefix() + ".prompt");
         if (prompt == null) {
-            prompt = "You are a professional Java developer. Give me a JAVA IMPLEMENTATION that will pass this test. Do not respond with a test. Give me only complete code and no snippets. Include imports and use the right package. %n%n%s";
+            prompt = "You are a professional Java developer. Give me a SINGLE FILE COMPLETE java implementation that will pass this test. Do not respond with a test. Give me only complete code and no snippets. Include imports and use the right package. %n%n%s";
         }
         return String.format(prompt, readFile(testFile));
     }

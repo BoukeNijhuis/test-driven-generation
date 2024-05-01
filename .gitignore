@@ -1,5 +1,4 @@
 target/
-src/main/resources/test-driven-generation.properties
 generator.log
 
 ### IntelliJ IDEA ###
