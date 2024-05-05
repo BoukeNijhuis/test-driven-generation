@@ -147,6 +147,7 @@ public class Generator {
             return false;
         } else {
 
+            // TODO: use the package + filename to determine the last part of the path
             // copy the file to the project (based on the path of the test file)
             Path projectFileParentPath = determineProjectParentFilePath(inputContainer.getInputFile());
             Path projectFilePath = projectFileParentPath.resolve(codeContainer.getFileName());
