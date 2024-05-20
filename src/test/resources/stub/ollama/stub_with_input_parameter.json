@@ -9,5 +9,6 @@
   "prompt_eval_count": 144,
   "prompt_eval_duration": 666876000,
   "eval_count": 521,
-  "eval_duration": 15957648000
+  "eval_duration": 15957648000,
+  "done_reason": "true"
 }

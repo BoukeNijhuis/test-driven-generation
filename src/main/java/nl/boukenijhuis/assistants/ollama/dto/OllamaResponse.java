@@ -14,6 +14,7 @@ public record OllamaResponse(
         int prompt_eval_count,
         long prompt_eval_duration,
         int eval_count,
-        long eval_duration) {
+        long eval_duration,
+        String done_reason) {
 }
 
