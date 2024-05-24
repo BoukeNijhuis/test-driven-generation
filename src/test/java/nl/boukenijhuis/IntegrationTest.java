@@ -2,6 +2,7 @@ package nl.boukenijhuis;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 
 public class IntegrationTest {
 
@@ -13,7 +14,8 @@ public class IntegrationTest {
      * @throws IOException if an I/O error occurs
      */
     protected static String readFile(String fileName) throws IOException {
-        try (var in = IntegrationTest.class.getResourceAsStream("/" + fileName)) {
+        String normalizedFileName = Paths.get(fileName).toString();
+        try (var in = IntegrationTest.class.getResourceAsStream("/" + normalizedFileName)) {
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         } catch (NullPointerException e) {
             throw new RuntimeException(String.format("The file '%s' cannot be found in the resources directory.", fileName));
