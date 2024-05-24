@@ -14,9 +14,7 @@ import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -147,17 +145,19 @@ public class Utils {
 
     // returns the location where to solution should go (based upon the input file)
     public static Path determineProjectParentFilePath(Path inputFilePath) {
+        String osSeparator = FileSystems.getDefault().getSeparator();
         String parentPathAsString = inputFilePath.getParent().toString();
-        String projectPathAsString = parentPathAsString.replace("/test/", "/main/");
+        String projectPathAsString = parentPathAsString.replace(osSeparator+"test"+osSeparator, osSeparator+"main"+osSeparator);
+        // Escape the path separator if it is a backslash (Windows)
+        String escapedSeparator = osSeparator.equals("\\") ? "\\\\" : osSeparator;
         // misses the following case: "/test$"
-        projectPathAsString = projectPathAsString.replaceAll("/test$", "/main");
+        projectPathAsString = projectPathAsString.replaceAll(escapedSeparator + "test$", escapedSeparator+"main");
         return Path.of(projectPathAsString);
     }
 
     // deletes all files (not directories) in a directory and its sub-directories
     public static void purgeDirectory(Path dir) {
-        // safety check: only do this when the path starts with '/val/folders'
-        if (dir.toString().startsWith("/var/folders")) {
+        if (isTemporaryDirectory(dir)) {
             try {
                 Files.walk(dir)
                         .sorted(Comparator.reverseOrder())
@@ -171,5 +171,11 @@ public class Utils {
         } else {
             throw new RuntimeException("!!! Trying to recursively delete this path: " + dir);
         }
+    }
+
+    static boolean isTemporaryDirectory(Path dir) {
+        Path tempDir = Paths.get(System.getProperty("java.io.tmpdir")).toAbsolutePath();
+        Path absDir = dir.toAbsolutePath();
+        return absDir.startsWith(tempDir);
     }
 }
