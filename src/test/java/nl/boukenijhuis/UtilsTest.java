@@ -14,20 +14,19 @@ class UtilsTest {
 
     @Test
     public void determineProjectFilePath() {
-        if (isWindows()) {
-            test("src\\test\\org\\example\\UtilsTest.java", "src\\main\\org\\example");
-            test("src\\test\\UtilsTest.java", "src\\main");
-            test("\\Users\\boukenijhuis\\git\\test-driven-generation-examples\\src\\test\\java\\org\\example\\oddeven\\OddEvenTest.java",
-                    "\\Users\\boukenijhuis\\git\\test-driven-generation-examples\\src\\main\\java\\org\\example\\oddeven");
-        } else {
             test("src/test/org/example/UtilsTest.java", "src/main/org/example");
             test("src/test/UtilsTest.java", "src/main");
             test("/Users/boukenijhuis/git/test-driven-generation-examples/src/test/java/org/example/oddeven/OddEvenTest.java",
                     "/Users/boukenijhuis/git/test-driven-generation-examples/src/main/java/org/example/oddeven");
-        }
     }
 
     private void test(String input, String output) {
+        // change file separator for windows
+        if (isWindows()) {
+            input = input.replace("/", "\\\\");
+            output = output.replace("\\", "\\\\");
+        }
+
         Path path = Utils.determineProjectParentFilePath(Path.of(input));
         assertEquals(output, path.toString());
     }
@@ -69,8 +68,5 @@ class UtilsTest {
     // is used to convert different types of line endings (Windows, old Mac, Unix) into a single, consistent format (\n)
     static String normalizeLineSeparators(String content) {
         return content.replaceAll("\\r\\n", "\n").replaceAll("\\r", "\n");
-    }
-
-
-
+    }˚
 }
