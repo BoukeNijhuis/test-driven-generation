@@ -68,5 +68,5 @@ class UtilsTest {
     // is used to convert different types of line endings (Windows, old Mac, Unix) into a single, consistent format (\n)
     static String normalizeLineSeparators(String content) {
         return content.replaceAll("\\r\\n", "\n").replaceAll("\\r", "\n");
-    }˚
+    }
 }
