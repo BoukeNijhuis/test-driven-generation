@@ -35,11 +35,9 @@ public abstract class AbstractAIAssistant implements AIAssistant {
     protected Properties properties;
 
     public AbstractAIAssistant(Properties properties) {
-        LOG = LogManager.getLogger(AbstractAIAssistant.class);
-        String model = properties.getProperty(getPropertyPrefix() + ".model");
-        // TODO: print all properties (EXCEPT the API key!)
-        LOG.debug("Family: {}, model: {}", getPropertyPrefix(), model);
         this.properties = properties;
+        LOG = LogManager.getLogger(AbstractAIAssistant.class);
+        LOG.debug("Family: {}, model: {}, timeout {}", getPropertyPrefix(), getModel() , getTimeout());
     }
 
     public CodeContainer call(Path testFile, PreviousRunContainer previousRunContainer) throws IOException, InterruptedException {
@@ -203,5 +201,9 @@ public abstract class AbstractAIAssistant implements AIAssistant {
 
     protected int getTimeout() {
         return Integer.parseInt((String) properties.get(getPropertyPrefix() + ".timeout"));
+    }
+
+    protected String getModel() {
+        return properties.getProperty(getPropertyPrefix() + ".model");
     }
 }
