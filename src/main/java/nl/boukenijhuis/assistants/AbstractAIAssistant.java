@@ -35,6 +35,7 @@ public abstract class AbstractAIAssistant implements AIAssistant {
     public AbstractAIAssistant(Properties properties) {
         LOG = LogManager.getLogger(AbstractAIAssistant.class);
         String model = properties.getProperty(getPropertyPrefix() + ".model");
+        // TODO: print all properties (EXCEPT the API key!)
         LOG.debug("Family: {}, model: {}", getPropertyPrefix(), model);
         this.properties = properties;
     }
@@ -167,14 +168,20 @@ public abstract class AbstractAIAssistant implements AIAssistant {
 
     protected HttpRequest getHttpRequest(String inputBody, String propertyPrefix) {
         try {
-            String apiKey = (String) properties.get(propertyPrefix + ".api-key");
+            // move all properties references to methods (for easier reading)
+            String apiKey = (String) properties.getProperty(propertyPrefix + ".api-key", "");
             String server = (String) properties.get(propertyPrefix + ".server");
             String url = (String) properties.get(propertyPrefix + ".url");
             int timeout = Integer.parseInt((String) properties.get(propertyPrefix + ".timeout"));
             return HttpRequest.newBuilder()
                     .uri(new URI(server + url))
+                    // TODO: make a abstract getHeaders method
                     .header("Content-Type", "application/json")
+                    // TODO: make the authorization header dynamic (OpenAI -> Authorization, Anthropic -> x-api-key)
                     .header("Authorization", "Bearer " + apiKey)
+                    .header("x-api-key", apiKey)
+                    // only for Anthropic
+                    .header("anthropic-version", "2023-06-01")
                     .POST(HttpRequest.BodyPublishers.ofString(inputBody))
                     .timeout(Duration.ofSeconds(timeout))
                     .build();

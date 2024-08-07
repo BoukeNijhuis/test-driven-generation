@@ -1,6 +1,7 @@
 package nl.boukenijhuis;
 
 import nl.boukenijhuis.assistants.AIAssistant;
+import nl.boukenijhuis.assistants.anthropic.Anthropic;
 import nl.boukenijhuis.assistants.chatgpt.ChatGpt;
 import nl.boukenijhuis.assistants.ollama.Ollama;
 import nl.boukenijhuis.dto.ArgumentContainer;
@@ -50,6 +51,12 @@ public class Generator {
                 properties.setProperty("chatgpt.api-key", openAIApiKey);
             }
 
+            // read the OpenAI API from the environment
+            String anthropicApiKey = System.getenv("ANTHROPIC_API_KEY");
+            if (anthropicApiKey != null) {
+                properties.setProperty("anthropic.api-key", anthropicApiKey);
+            }
+
             // parse the command line arguments
             ArgumentContainer argumentContainer = new ArgumentContainer(args);
 
@@ -69,6 +76,8 @@ public class Generator {
             AIAssistant aiAssistant;
             if (family.equalsIgnoreCase("chatgpt")) {
                 aiAssistant = new ChatGpt(properties);
+            } else if (family.equalsIgnoreCase("anthropic")) {
+                aiAssistant = new Anthropic(properties);
             }
             else {
                 aiAssistant = new Ollama(properties);

@@ -1,8 +1,8 @@
-package nl.boukenijhuis.assistants.chatgpt.dto;
+package nl.boukenijhuis.assistants.anthropic.dto;
 
 import java.util.List;
 
-public record ChatGptRequest(
+public record AnthropicRequest(
         String model,
         List<Message> messages,
         int max_tokens
