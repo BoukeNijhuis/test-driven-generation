@@ -40,4 +40,9 @@ public class Anthropic extends AbstractAIAssistant {
         var chatGptRequest = new AnthropicRequest(properties.getProperty(getPropertyPrefix() + ".model"), messageList, maxTokens);
         return objectMapper.writeValueAsString(chatGptRequest);
     }
+
+    @Override
+    protected String[] getHeaders() {
+        return new String[] { "x-api-key", getApiKey(), "anthropic-version", "2023-06-01" };
+    }
 }

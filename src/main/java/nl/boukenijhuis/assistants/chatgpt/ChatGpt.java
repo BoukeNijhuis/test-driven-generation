@@ -32,6 +32,11 @@ public class ChatGpt extends AbstractAIAssistant {
     }
 
     @Override
+    protected String[] getHeaders() {
+        return new String[] {"Authorization", "Bearer " + getApiKey()};
+    }
+
+    @Override
     protected String createRequestBody(String prompt) throws JsonProcessingException {
         // put context in front of the provided prompt
         String updatedPrompt = String.format("Previous answer: %s\n\n%s", context, prompt);

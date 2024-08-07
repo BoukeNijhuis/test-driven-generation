@@ -17,6 +17,8 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -115,10 +117,6 @@ public abstract class AbstractAIAssistant implements AIAssistant {
 
     protected abstract String getContent(HttpResponse<String> response) throws JsonProcessingException;
 
-    protected String extractFileName(Path testFile) {
-        return testFile.toFile().getName().replace("Test", "");
-    }
-
     // TODO per assistant?
     protected String extractJavaContent(String content) {
 
@@ -166,27 +164,44 @@ public abstract class AbstractAIAssistant implements AIAssistant {
         }
     }
 
+    protected abstract String[] getHeaders();
+
     protected HttpRequest getHttpRequest(String inputBody, String propertyPrefix) {
         try {
-            // move all properties references to methods (for easier reading)
-            String apiKey = (String) properties.getProperty(propertyPrefix + ".api-key", "");
-            String server = (String) properties.get(propertyPrefix + ".server");
-            String url = (String) properties.get(propertyPrefix + ".url");
-            int timeout = Integer.parseInt((String) properties.get(propertyPrefix + ".timeout"));
             return HttpRequest.newBuilder()
-                    .uri(new URI(server + url))
-                    // TODO: make a abstract getHeaders method
-                    .header("Content-Type", "application/json")
-                    // TODO: make the authorization header dynamic (OpenAI -> Authorization, Anthropic -> x-api-key)
-                    .header("Authorization", "Bearer " + apiKey)
-                    .header("x-api-key", apiKey)
-                    // only for Anthropic
-                    .header("anthropic-version", "2023-06-01")
+                    .uri(new URI(getServer() + getUrl()))
+                    .headers(mergeHeaders())
                     .POST(HttpRequest.BodyPublishers.ofString(inputBody))
-                    .timeout(Duration.ofSeconds(timeout))
+                    .timeout(Duration.ofSeconds(getTimeout()))
                     .build();
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String[] mergeHeaders() {
+        List<String> headers = new ArrayList<>();
+        // default header
+        headers.add("Content-Type");
+        headers.add("application/json");
+        // assistant specific headers
+        headers.addAll(Arrays.asList(getHeaders()));
+        return headers.toArray(new String[0]);
+    }
+
+    protected String getApiKey() {
+        return properties.getProperty(getPropertyPrefix() + ".api-key", "");
+    }
+
+    protected String getServer() {
+        return properties.getProperty(getPropertyPrefix() + ".server");
+    }
+
+    protected String getUrl() {
+        return properties.getProperty(getPropertyPrefix() + ".url");
+    }
+
+    protected int getTimeout() {
+        return Integer.parseInt((String) properties.get(getPropertyPrefix() + ".timeout"));
     }
 }

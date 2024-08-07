@@ -32,6 +32,12 @@ public class Ollama extends AbstractAIAssistant {
         return responseClass.response();
     }
 
+    // Ollama does not need headers
+    @Override
+    protected String[] getHeaders() {
+        return new String[0];
+    }
+
     @Override
     protected String createRequestBody(String prompt) throws JsonProcessingException {
         OllamaRequest request = new OllamaRequest(model, prompt, this.context);
