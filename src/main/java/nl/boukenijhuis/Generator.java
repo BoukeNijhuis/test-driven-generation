@@ -32,35 +32,41 @@ public class Generator {
         this(new ArrayList<>());
     }
 
+    // TODO move to the runGenerator method
+    // for bringing in the maven dependencies
     public Generator(List<String> dependencies) {
         this.dependencies = dependencies;
     }
 
     public static void main(String[] args) {
         try {
-            // TODO the properties argument container should be abstracted away (and reused in the maven plugin)
-
-            // determine all properties based upon a property file and command line arguments
-            PropertiesContainer properties = new PropertiesContainer(args);
-            String family = properties.getFamily();
-
-            // create the assistant
-            AIAssistant aiAssistant;
-            if (family.equalsIgnoreCase("chatgpt")) {
-                aiAssistant = new ChatGpt(properties);
-            } else if (family.equalsIgnoreCase("anthropic")) {
-                aiAssistant = new Anthropic(properties);
-            }
-            else {
-                aiAssistant = new Ollama(properties);
-            }
-
-            // start a generator
-            new Generator().run(aiAssistant, new TestRunner());
+            new Generator().runGenerator(args);
         } catch (Exception e) {
             LOG.info(e);
             e.printStackTrace();
         }
+    }
+
+    // this is the entry point for the maven plugin
+    public boolean runGenerator(String[] args) throws IOException {
+
+        // determine all properties based upon a property file and command line arguments
+        PropertiesContainer properties = new PropertiesContainer(args);
+        String family = properties.getFamily();
+
+        // create the assistant
+        AIAssistant aiAssistant;
+        if (family.equalsIgnoreCase("chatgpt")) {
+            aiAssistant = new ChatGpt(properties);
+        } else if (family.equalsIgnoreCase("anthropic")) {
+            aiAssistant = new Anthropic(properties);
+        } else {
+            aiAssistant = new Ollama(properties);
+        }
+
+        // start a generator
+        return run(aiAssistant, new TestRunner());
+
     }
 
     // returns true when a solution is found, false otherwise (used in maven plugin)
