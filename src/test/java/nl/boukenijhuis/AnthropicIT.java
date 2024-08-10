@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Properties;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -39,13 +38,7 @@ public class AnthropicIT extends IntegrationTest {
                 .whenScenarioStateIs(SECOND_REPLY)
                 .willReturn(ok(readFile("stub/anthropic/stub_with_working_code.json"))));
 
-        Properties properties = new Properties();
-        properties.setProperty("anthropic.server", "http://localhost:8089");
-        properties.setProperty("anthropic.url", path);
-        properties.setProperty("anthropic.maxTokens", "600");
-        properties.setProperty("anthropic.apiKey", "apiKey");
-        properties.setProperty("anthropic.timeout", "30");
-        var aiAssistant = new Anthropic(properties);
+        var aiAssistant = new Anthropic(new TestPropertiesContainer("anthropic", path));
 
         CodeContainer response = aiAssistant.call(Path.of("src", "test", "resources", "input", "PrimeNumberGeneratorTest.java"), new PreviousRunContainer());
         assertEquals(normalizeLineSeparators(readFile("expected/anthropic/PrimeNumberGenerator.java")), response.getContent());

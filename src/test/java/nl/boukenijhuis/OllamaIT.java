@@ -3,7 +3,6 @@ package nl.boukenijhuis;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import nl.boukenijhuis.assistants.ollama.Ollama;
-import nl.boukenijhuis.dto.ArgumentContainer;
 import nl.boukenijhuis.dto.CodeContainer;
 import nl.boukenijhuis.dto.PreviousRunContainer;
 import org.junit.jupiter.api.Test;
@@ -20,7 +19,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @WireMockTest(httpPort = 8089)
-public class OllamaGptIT extends IntegrationTest {
+public class OllamaIT extends IntegrationTest {
 
     private final String RETRY_SCENARIO = "retry";
     private String SECOND_REPLY = "second";
@@ -41,11 +40,7 @@ public class OllamaGptIT extends IntegrationTest {
                 .whenScenarioStateIs(SECOND_REPLY)
                 .willReturn(ok(responseWithCode(readFile("stub/ollama/code/primenumber/PrimeNumberGenerator_correct.java")))));
 
-        Properties properties = new Properties();
-        properties.setProperty("ollama.server", "http://localhost:8089");
-        properties.setProperty("ollama.url", path);
-        properties.setProperty("ollama.timeout", "30");
-        var aiAssistant = new Ollama(properties);
+        var aiAssistant = new Ollama(new TestPropertiesContainer("ollama", path));
 
         CodeContainer response = aiAssistant.call(Path.of("src", "test", "resources", "input", "PrimeNumberGeneratorTest.java"), new PreviousRunContainer());
         assertEquals(readFile("expected/ollama/PrimeNumberGenerator.java"), response.getContent());
@@ -58,18 +53,16 @@ public class OllamaGptIT extends IntegrationTest {
     public void checkForTestsBeingRun() throws IOException, InterruptedException {
 
         String body = responseWithCode(readFile("stub/ollama/code/codecontainer/CodeContainer.java"));
-        stubFor(post("/api/generate").willReturn(ok(body)));
+        String path = "/api/generate";
+        stubFor(post(path).willReturn(ok(body)));
 
-        Properties properties = new Properties();
-        properties.setProperty("ollama.server", "http://localhost:8089");
-        properties.setProperty("ollama.url", "/api/generate");
-        properties.setProperty("ollama.timeout", "30");
+        Properties properties = createProperties("ollama", path);
 
         Path tempDirectory = Files.createTempDirectory("test");
         String inputFile = "src/test/resources/input/CodeContainerTest.java";
         String[] args = {"--test-file", inputFile, "--working-directory",  tempDirectory.toString()};
         TestRunner testRunner = new TestRunner();
-        new Generator().run(new Ollama(properties), testRunner, new ArgumentContainer(args));
+        new Generator().run(new Ollama(new TestPropertiesContainer(properties, args)), testRunner);
 
         // check the output of the testrunner
         TestRunner.TestInfo latestTestInfo = testRunner.getLatestTestInfo();

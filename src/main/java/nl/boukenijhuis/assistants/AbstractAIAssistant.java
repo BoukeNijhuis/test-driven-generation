@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.boukenijhuis.ClassNameNotFoundException;
 import nl.boukenijhuis.dto.CodeContainer;
 import nl.boukenijhuis.dto.PreviousRunContainer;
+import nl.boukenijhuis.dto.PropertiesContainer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,7 +21,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,18 +32,22 @@ public abstract class AbstractAIAssistant implements AIAssistant {
     protected static final ObjectMapper objectMapper = new ObjectMapper();
     // TODO make configurable && use something like a response timeout
     protected static final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
-    protected Properties properties;
+    protected PropertiesContainer properties;
 
-    public AbstractAIAssistant(Properties properties) {
+    public AbstractAIAssistant(PropertiesContainer properties) {
         this.properties = properties;
         LOG = LogManager.getLogger(AbstractAIAssistant.class);
-        LOG.debug("Family: {}, model: {}, timeout {}", getPropertyPrefix(), getModel() , getTimeout());
+        LOG.debug("Family: {}, model: {}, timeout {}", getFamily(), properties.getModel() , properties.getTimeout());
+    }
+
+    public PropertiesContainer getProperties() {
+        return properties;
     }
 
     public CodeContainer call(Path testFile, PreviousRunContainer previousRunContainer) throws IOException, InterruptedException {
 
         // TODO introduce own properties object that holds defaults?
-        int maxInternalAttempts = Integer.parseInt(properties.getProperty("retries", "5"));
+        int maxInternalAttempts = properties.getRetries();
 
         String javaContent = "";
         int internalAttempts = 0;
@@ -65,9 +69,10 @@ public abstract class AbstractAIAssistant implements AIAssistant {
             LOG.debug("Prompt: {}", prompt);
 
             String requestBody = createRequestBody(prompt);
-            HttpRequest request = getHttpRequest(requestBody, getPropertyPrefix());
+            HttpRequest request = getHttpRequest(requestBody, getFamily());
 
             // TODO: add a time out of ten seconds
+            // TODO: add a streaming option so the wait seems shorter
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             String content = getContent(response);
             LOG.debug("Received answer: \n{}", content);
@@ -102,14 +107,14 @@ public abstract class AbstractAIAssistant implements AIAssistant {
     // TODO per assistant?
     private String getPromptWithFile(Path testFile) {
 
-        String prompt = properties.getProperty(getPropertyPrefix() + ".prompt");
+        String prompt = properties.getPrompt();
         if (prompt == null) {
             prompt = "You are a professional Java developer. Give me a SINGLE FILE COMPLETE java implementation that will pass this test. Do not respond with a test. Give me only complete code and no snippets. Include imports and use the right package. %n%n%s";
         }
         return String.format(prompt, readFile(testFile));
     }
 
-    protected abstract String getPropertyPrefix();
+    protected abstract String getFamily();
 
     protected abstract String createRequestBody(String promptWithFile) throws JsonProcessingException;
 
@@ -167,10 +172,10 @@ public abstract class AbstractAIAssistant implements AIAssistant {
     protected HttpRequest getHttpRequest(String inputBody, String propertyPrefix) {
         try {
             return HttpRequest.newBuilder()
-                    .uri(new URI(getServer() + getUrl()))
+                    .uri(new URI(properties.getServer() + properties.getUrl()))
                     .headers(mergeHeaders())
                     .POST(HttpRequest.BodyPublishers.ofString(inputBody))
-                    .timeout(Duration.ofSeconds(getTimeout()))
+                    .timeout(Duration.ofSeconds(properties.getTimeout()))
                     .build();
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
@@ -185,25 +190,5 @@ public abstract class AbstractAIAssistant implements AIAssistant {
         // assistant specific headers
         headers.addAll(Arrays.asList(getHeaders()));
         return headers.toArray(new String[0]);
-    }
-
-    protected String getApiKey() {
-        return properties.getProperty(getPropertyPrefix() + ".api-key", "");
-    }
-
-    protected String getServer() {
-        return properties.getProperty(getPropertyPrefix() + ".server");
-    }
-
-    protected String getUrl() {
-        return properties.getProperty(getPropertyPrefix() + ".url");
-    }
-
-    protected int getTimeout() {
-        return Integer.parseInt((String) properties.get(getPropertyPrefix() + ".timeout"));
-    }
-
-    protected String getModel() {
-        return properties.getProperty(getPropertyPrefix() + ".model");
     }
 }

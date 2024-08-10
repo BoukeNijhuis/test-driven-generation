@@ -17,18 +17,21 @@ public final class InputContainer {
         this.outputDirectory = outputDirectory;
     }
 
-    public static InputContainer build(ArgumentContainer argumentContainer) throws IOException {
+    public static InputContainer build(PropertiesContainer properties) throws IOException {
 
+        // check if there is an input file
+        String testFile = properties.getTestFile();
+        if (testFile == null) {
+            throw new RuntimeException("No JUnit 5 test file provided as command-line argument.");
+        }
 
-        // check if the first argument is a file
-        String testFile = argumentContainer.getTestFile();
         Path inputFile = Path.of(testFile);
         if (!Files.isRegularFile(inputFile)) {
             throw new RuntimeException("File [" + testFile + "] is not a file.");
         }
 
         // check / create the output directory
-        String workingDirectory = argumentContainer.getWorkingDirectory();
+        String workingDirectory = properties.getWorkingDirectory();
         Path outputDirectory;
         if (workingDirectory != null) {
             outputDirectory = Path.of(workingDirectory);

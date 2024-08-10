@@ -1,9 +1,9 @@
 package nl.boukenijhuis;
 
 import nl.boukenijhuis.assistants.AIAssistant;
-import nl.boukenijhuis.dto.ArgumentContainer;
 import nl.boukenijhuis.dto.CodeContainer;
 import nl.boukenijhuis.dto.PreviousRunContainer;
+import nl.boukenijhuis.dto.PropertiesContainer;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -62,7 +62,7 @@ class GeneratorIT extends IntegrationTest {
         Path tempDirectory = Files.createTempDirectory("test");
         String[] args = {"--test-file", inputFile, "--working-directory", tempDirectory.toString()};
         TestRunner testRunner = new TestRunner();
-        new Generator().run(new StubAssistant(outputFileContent), testRunner, new ArgumentContainer(args));
+        new Generator().run(new StubAssistant(args, outputFileContent), testRunner);
 
         // check if the file is created with correct content
         String packageDirectories = packageName.replace(".", "/");
@@ -77,7 +77,7 @@ class GeneratorIT extends IntegrationTest {
     }
 
 
-    record StubAssistant(String outputFileContent) implements AIAssistant {
+    record StubAssistant(String[] args, String outputFileContent) implements AIAssistant {
 
         @Override
         public CodeContainer call(Path testFile, PreviousRunContainer previousRunContainer)  {
@@ -86,6 +86,11 @@ class GeneratorIT extends IntegrationTest {
             } catch (ClassNameNotFoundException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        @Override
+        public PropertiesContainer getProperties() {
+            return new PropertiesContainer(args);
         }
     }
 

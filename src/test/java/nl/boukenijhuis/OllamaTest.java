@@ -2,6 +2,7 @@ package nl.boukenijhuis;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import nl.boukenijhuis.assistants.ollama.Ollama;
+import nl.boukenijhuis.dto.PropertiesContainer;
 import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.SSLSession;
@@ -13,7 +14,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class OllamaTest extends Ollama {
 
     private OllamaTest() {
-        super(new Properties());
+        super(new PropertiesContainer(new String[0]));
     }
 
     @Test

@@ -1,8 +1,11 @@
 package nl.boukenijhuis;
 
+import nl.boukenijhuis.dto.PropertiesContainer;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.Properties;
 
 public class IntegrationTest {
 
@@ -35,5 +38,28 @@ public class IntegrationTest {
     // escape double qoutes and convert end of lines
     private static String convertToJsonValue(String input) {
         return input.replace("\n", "\\n").replace("\"", "\\\"");
+    }
+
+    public Properties createProperties(String family, String path) {
+        Properties properties = new Properties();
+        properties.setProperty(family + ".server", "http://localhost:8089");
+        properties.setProperty(family + ".url", path);
+        properties.setProperty(family + ".maxTokens", "600");
+        properties.setProperty(family + ".apiKey", "apiKey");
+        properties.setProperty(family + ".timeout", "30");
+        return properties;
+    }
+
+    class TestPropertiesContainer extends PropertiesContainer {
+
+        public TestPropertiesContainer(Properties properties, String[] args) {
+            super(args);
+            this.properties = properties;
+        }
+
+        public TestPropertiesContainer(String family, String path) {
+            super(new String[] { "--family", family});
+            this.properties = createProperties(family, path);
+        }
     }
 }

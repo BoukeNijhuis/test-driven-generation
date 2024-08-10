@@ -36,11 +36,6 @@ public class ArgumentContainer {
                 }
             }
         }
-
-        // check the variables
-        if (testFile == null) {
-            throw new RuntimeException("No JUnit 5 test file provided as command-line argument.");
-        }
     }
 
     public String getTestFile() {

@@ -4,24 +4,24 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import nl.boukenijhuis.assistants.AbstractAIAssistant;
 import nl.boukenijhuis.assistants.ollama.dto.OllamaRequest;
 import nl.boukenijhuis.assistants.ollama.dto.OllamaResponse;
+import nl.boukenijhuis.dto.PropertiesContainer;
 
 import java.net.http.HttpResponse;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
 public class Ollama extends AbstractAIAssistant {
 
     protected List<Integer> context = Collections.emptyList();
     protected String model;
 
-    public Ollama(Properties properties) {
+    public Ollama(PropertiesContainer properties) {
         super(properties);
-        this.model = properties.getProperty("ollama.model");
+        this.model = properties.getModel();
     }
 
     @Override
-    protected String getPropertyPrefix() {
+    protected String getFamily() {
         return "ollama";
     }
 

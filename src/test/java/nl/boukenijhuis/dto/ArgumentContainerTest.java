@@ -6,7 +6,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ArgumentContainerTest {
 
@@ -45,15 +44,4 @@ class ArgumentContainerTest {
         assertNull(argumentContainer.getFamily());
         assertNull(argumentContainer.getModel());
     }
-
-    @Test
-    public void throwErrorWhenNoArguments() {
-
-        RuntimeException runtimeException = assertThrows(RuntimeException.class, () -> {
-            var stringArray = List.of().toArray(new String[0]);
-            ArgumentContainer argumentContainer = new ArgumentContainer(stringArray);
-        });
-        assertEquals(runtimeException.getMessage(), "No JUnit 5 test file provided as command-line argument.");
-    }
-
 }

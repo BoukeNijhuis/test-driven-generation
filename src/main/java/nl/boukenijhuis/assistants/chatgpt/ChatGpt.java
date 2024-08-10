@@ -4,21 +4,21 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import nl.boukenijhuis.assistants.AbstractAIAssistant;
 import nl.boukenijhuis.assistants.chatgpt.dto.ChatGptRequest;
 import nl.boukenijhuis.assistants.chatgpt.dto.ChatGptResponse;
+import nl.boukenijhuis.dto.PropertiesContainer;
 
 import java.net.http.HttpResponse;
 import java.util.List;
-import java.util.Properties;
 
 public class ChatGpt extends AbstractAIAssistant {
 
     protected String context = "";
 
-    public ChatGpt(Properties properties) {
+    public ChatGpt(PropertiesContainer properties) {
         super(properties);
     }
 
     @Override
-    protected String getPropertyPrefix() {
+    protected String getFamily() {
         return "chatgpt";
     }
 
@@ -33,7 +33,7 @@ public class ChatGpt extends AbstractAIAssistant {
 
     @Override
     protected String[] getHeaders() {
-        return new String[] {"Authorization", "Bearer " + getApiKey()};
+        return new String[] {"Authorization", "Bearer " + properties.getApiKey()};
     }
 
     @Override
@@ -41,8 +41,8 @@ public class ChatGpt extends AbstractAIAssistant {
         // put context in front of the provided prompt
         String updatedPrompt = String.format("Previous answer: %s\n\n%s", context, prompt);
         var messageList = List.of(new ChatGptRequest.Message("user", updatedPrompt));
-        int maxTokens = Integer.parseInt((String) properties.get(getPropertyPrefix() + ".maxTokens"));
-        var chatGptRequest = new ChatGptRequest(properties.getProperty(getPropertyPrefix() + ".model"), messageList, maxTokens);
+        int maxTokens = properties.getMaxTokens();
+        var chatGptRequest = new ChatGptRequest(properties.getModel(), messageList, maxTokens);
         return objectMapper.writeValueAsString(chatGptRequest);
     }
 }

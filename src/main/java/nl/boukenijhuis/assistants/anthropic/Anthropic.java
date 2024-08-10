@@ -4,21 +4,21 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import nl.boukenijhuis.assistants.AbstractAIAssistant;
 import nl.boukenijhuis.assistants.anthropic.dto.AnthropicRequest;
 import nl.boukenijhuis.assistants.anthropic.dto.AnthropicResponse;
+import nl.boukenijhuis.dto.PropertiesContainer;
 
 import java.net.http.HttpResponse;
 import java.util.List;
-import java.util.Properties;
 
 public class Anthropic extends AbstractAIAssistant {
 
     protected String context = "";
 
-    public Anthropic(Properties properties) {
+    public Anthropic(PropertiesContainer properties) {
         super(properties);
     }
 
     @Override
-    protected String getPropertyPrefix() {
+    protected String getFamily() {
         return "anthropic";
     }
 
@@ -36,13 +36,13 @@ public class Anthropic extends AbstractAIAssistant {
         // put context in front of the provided prompt
         String updatedPrompt = String.format("Previous answer: %s\n\n%s", context, prompt);
         var messageList = List.of(new AnthropicRequest.Message("user", updatedPrompt));
-        int maxTokens = Integer.parseInt((String) properties.get(getPropertyPrefix() + ".maxTokens"));
-        var chatGptRequest = new AnthropicRequest(properties.getProperty(getPropertyPrefix() + ".model"), messageList, maxTokens);
+        int maxTokens = properties.getMaxTokens();
+        var chatGptRequest = new AnthropicRequest(properties.getModel(), messageList, maxTokens);
         return objectMapper.writeValueAsString(chatGptRequest);
     }
 
     @Override
     protected String[] getHeaders() {
-        return new String[] { "x-api-key", getApiKey(), "anthropic-version", "2023-06-01" };
+        return new String[] { "x-api-key", properties.getApiKey(), "anthropic-version", "2023-06-01" };
     }
 }

@@ -4,10 +4,10 @@ import nl.boukenijhuis.assistants.AIAssistant;
 import nl.boukenijhuis.assistants.anthropic.Anthropic;
 import nl.boukenijhuis.assistants.chatgpt.ChatGpt;
 import nl.boukenijhuis.assistants.ollama.Ollama;
-import nl.boukenijhuis.dto.ArgumentContainer;
 import nl.boukenijhuis.dto.CodeContainer;
 import nl.boukenijhuis.dto.InputContainer;
 import nl.boukenijhuis.dto.PreviousRunContainer;
+import nl.boukenijhuis.dto.PropertiesContainer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,7 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static nl.boukenijhuis.Utils.addToClassLoader;
@@ -41,36 +40,9 @@ public class Generator {
         try {
             // TODO the properties argument container should be abstracted away (and reused in the maven plugin)
 
-            // read the properties
-            Properties properties = new Properties();
-            properties.load(Generator.class.getResourceAsStream("/test-driven-generation.properties"));
-
-            // read the OpenAI API from the environment
-            String openAIApiKey = System.getenv("OPENAI_API_KEY");
-            if (openAIApiKey != null) {
-                properties.setProperty("chatgpt.api-key", openAIApiKey);
-            }
-
-            // read the OpenAI API from the environment
-            String anthropicApiKey = System.getenv("ANTHROPIC_API_KEY");
-            if (anthropicApiKey != null) {
-                properties.setProperty("anthropic.api-key", anthropicApiKey);
-            }
-
-            // parse the command line arguments
-            ArgumentContainer argumentContainer = new ArgumentContainer(args);
-
-            // determine the family
-            String family = argumentContainer.getFamily();
-            if (family == null) {
-                family = "ollama";
-            }
-
-            // update the properties model is provided
-            String model = argumentContainer.getModel();
-            if (model != null) {
-                properties.setProperty(family + ".model", model);
-            }
+            // determine all properties based upon a property file and command line arguments
+            PropertiesContainer properties = new PropertiesContainer(args);
+            String family = properties.getFamily();
 
             // create the assistant
             AIAssistant aiAssistant;
@@ -84,7 +56,7 @@ public class Generator {
             }
 
             // start a generator
-            new Generator().run(aiAssistant, new TestRunner(), argumentContainer);
+            new Generator().run(aiAssistant, new TestRunner());
         } catch (Exception e) {
             LOG.info(e);
             e.printStackTrace();
@@ -92,10 +64,11 @@ public class Generator {
     }
 
     // returns true when a solution is found, false otherwise (used in maven plugin)
-    public boolean run(AIAssistant assistant, TestRunner testRunner, ArgumentContainer argumentContainer) throws IOException {
+    // TODO: remove third argument, info is already in AIAssistant?
+    public boolean run(AIAssistant assistant, TestRunner testRunner) throws IOException {
 
         // sanitize and provide default inputs
-        InputContainer inputContainer = InputContainer.build(argumentContainer);
+        InputContainer inputContainer = InputContainer.build(assistant.getProperties());
 
         // object for storing test information
         TestRunner.TestInfo testInfo = null;
