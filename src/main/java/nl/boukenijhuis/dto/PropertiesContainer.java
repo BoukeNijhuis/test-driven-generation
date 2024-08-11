@@ -12,8 +12,6 @@ public class PropertiesContainer {
     private ArgumentContainer argumentContainer;
     private String family;
 
-    // TODO check if everywhere the commandline overwrites the properties file
-    // TODO write test to check the previous line
     public PropertiesContainer(String[] args) {
         // read the properties
         properties = new Properties();
@@ -30,16 +28,25 @@ public class PropertiesContainer {
         // parse the command line arguments
         argumentContainer = new ArgumentContainer(args);
 
-        // determine the family (default to Ollama)
+        // family is special because it is the prefix in the properties (default to Ollama)
         family = argumentContainer.getFamily();
         if (family == null) {
             family = "ollama";
         }
 
-        // update the properties when a model is provided as argument
-        String model = argumentContainer.getModel();
-        if (model != null) {
-            properties.setProperty(family + ".model", model);
+        updatePropertyIfArgumentProvided(argumentContainer.getServer(), ".server");
+        updatePropertyIfArgumentProvided(argumentContainer.getUrl(), ".url");
+        // family is special therefor already determined a few lines above
+        updatePropertyIfArgumentProvided(argumentContainer.getModel(), ".model");
+        updatePropertyIfArgumentProvided(argumentContainer.getMaxTokens(), ".maxTokens");
+        updatePropertyIfArgumentProvided(argumentContainer.getTimeout(), ".timeout");
+        updatePropertyIfArgumentProvided(argumentContainer.getPrompt(), ".prompt");
+    }
+
+    private void updatePropertyIfArgumentProvided(String value, String propertyPostfix) {
+        // update the properties when a value is provided as argument
+        if (value != null) {
+            properties.setProperty(family + propertyPostfix, value);
         }
     }
 
@@ -79,7 +86,7 @@ public class PropertiesContainer {
     }
 
     public int getTimeout() {
-        return Integer.parseInt(properties.getProperty(family + ".timeout", "5"));
+        return Integer.parseInt(properties.getProperty(family + ".timeout", "30"));
     }
 
     public int getRetries() {

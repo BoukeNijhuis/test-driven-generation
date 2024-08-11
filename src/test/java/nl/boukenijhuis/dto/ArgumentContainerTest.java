@@ -11,14 +11,19 @@ class ArgumentContainerTest {
 
     @Test
     void happyFlow() {
-        var args = List.of("--test-file", "tf", "--working-directory", "wd", "--family", "f", "--model", "m");
+        var args = List.of("--test-file", "tf", "--working-directory", "wd", "--server", "s",
+                "--url", "u", "--family", "f", "--model", "m", "--timeout", "t", "--prompt", "p");
         var stringArray = args.toArray(new String[0]);
         ArgumentContainer argumentContainer = new ArgumentContainer(stringArray);
 
         assertEquals("tf", argumentContainer.getTestFile());
         assertEquals("wd", argumentContainer.getWorkingDirectory());
+        assertEquals("s", argumentContainer.getServer());
+        assertEquals("u", argumentContainer.getUrl());
         assertEquals("f", argumentContainer.getFamily());
         assertEquals("m", argumentContainer.getModel());
+        assertEquals("t", argumentContainer.getTimeout());
+        assertEquals("p", argumentContainer.getPrompt());
     }
 
     @Test
