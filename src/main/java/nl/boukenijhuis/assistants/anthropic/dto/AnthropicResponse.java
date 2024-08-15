@@ -11,7 +11,8 @@ public record AnthropicResponse(
         String stop_reason,
         String stop_sequence,
         String type,
-        Usage usage
+        Usage usage,
+        Error error
 ) {
 
     public record Content(
@@ -22,5 +23,11 @@ public record AnthropicResponse(
     public record Usage(
             int input_tokens,
             int output_tokens) {
+    }
+
+    public record Error(
+            String type,
+            String message
+    ) {
     }
 }

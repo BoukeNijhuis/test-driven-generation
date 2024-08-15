@@ -25,7 +25,15 @@ public class Anthropic extends AbstractAIAssistant {
     @Override
     protected String getContent(HttpResponse<String> response) throws JsonProcessingException {
         var responseClass = objectMapper.readValue(response.body(), AnthropicResponse.class);
-        String content = responseClass.content().get(0).text();
+        List<AnthropicResponse.Content> contentList = responseClass.content();
+        String content = "";
+        if (contentList != null && !contentList.isEmpty()) {
+            content = contentList.get(0).text();
+        } else {
+            if (responseClass.error() != null) {
+                LOG.debug("Error received: {}", responseClass.error());
+            }
+        }
         // use the entire content as context
         this.context = content;
         return content;
