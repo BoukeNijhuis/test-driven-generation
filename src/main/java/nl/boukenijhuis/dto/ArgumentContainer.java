@@ -9,6 +9,7 @@ public class ArgumentContainer {
     String workingDirectory;
     String server;
     String url;
+    // TODO make this an enum?
     String family;
     String model;
     String maxTokens;

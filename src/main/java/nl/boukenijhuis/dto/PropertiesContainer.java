@@ -1,6 +1,8 @@
 package nl.boukenijhuis.dto;
 
 import nl.boukenijhuis.Generator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -8,10 +10,12 @@ import java.util.Properties;
 
 public class PropertiesContainer {
 
+    private static final Logger LOG = LogManager.getLogger(PropertiesContainer.class);
     protected Properties properties;
     private ArgumentContainer argumentContainer;
     private String family;
 
+    // TODO inject System, so we can unittest the reading of api keys?
     public PropertiesContainer(String[] args) {
         // read the properties
         properties = new Properties();
@@ -61,16 +65,25 @@ public class PropertiesContainer {
 
     public String getApiKey() {
 
-        String environmentVariable =
-                switch (family) {
-                    case "chatgpt" -> "OPENAI_API_KEY";
-                    case "anthropic" -> "ANTHROPIC_API_KEY";
-                    default -> throw new RuntimeException(String.format("Cannot get api key for '%s', because it is an unknown family.", getFamily()));
-                };
+        String environmentVariable = translateFamilyToEnvVariable(family);
 
         // read the api key from the environment
         String apiKey = System.getenv(environmentVariable);
-        return Objects.requireNonNullElse(apiKey, "");
+
+        if (apiKey != null && !apiKey.isEmpty()) {
+            return apiKey;
+        } else {
+            LOG.warn(String.format("Environment variable '%s' cannot be found or is empty!", apiKey));
+            return "";
+        }
+    }
+
+    public String translateFamilyToEnvVariable(String family) {
+        return switch (family) {
+            case "chatgpt" -> "OPENAI_API_KEY";
+            case "anthropic" -> "ANTHROPIC_API_KEY";
+            default -> throw new RuntimeException(String.format("Cannot get api key for '%s', because it is an unknown family.", getFamily()));
+        };
     }
 
     public String getFamily() {
