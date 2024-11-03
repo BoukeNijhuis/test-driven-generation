@@ -47,7 +47,7 @@ public class Generator {
         }
     }
 
-    // this is the entry point for the maven plugin
+    // this is the entry point for the maven plugin (the return value is used by the plugin)
     public boolean runGenerator(String[] args) throws IOException {
 
         // determine all properties based upon a property file and command line arguments
@@ -70,7 +70,6 @@ public class Generator {
     }
 
     // returns true when a solution is found, false otherwise (used in maven plugin)
-    // TODO: remove third argument, info is already in AIAssistant?
     public boolean run(AIAssistant assistant, TestRunner testRunner) throws IOException {
 
         // sanitize and provide default inputs
@@ -137,6 +136,7 @@ public class Generator {
 
             // TODO: use the package + filename to determine the last part of the path
             // copy the file to the project (based on the path of the test file)
+            // TODO does not look at the package of the implementation (this could be different than the test file package)
             Path projectFileParentPath = determineProjectParentFilePath(inputContainer.getInputFile());
             Path projectFilePath = projectFileParentPath.resolve(codeContainer.getFileName());
             // only copy when the project file path exists
