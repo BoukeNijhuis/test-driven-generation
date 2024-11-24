@@ -2,19 +2,22 @@
 <Configuration status="WARN" shutdownHook="disable">
     <Appenders>
         <Console name="ConsoleAppender">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %30logger{1.} - %msg%n"/>
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%maxLen{%-13t}{10}] %-5level %maxLen{%-30logger{1}}{27} %msg%n"/>
+            <ThresholdFilter level="info"/>
         </Console>
         <File name="FileAppender" fileName="generator.log" append="false">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %30logger{1.} - %msg%n"/>
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%maxLen{%-13t}{10}] %-5level %maxLen{%-30logger{1}}{27} %msg%n"/>
         </File>
     </Appenders>
     <Loggers>
         <Root level="info">
-            <AppenderRef ref="ConsoleAppender"/>
-            <ThresholdFilter level="info"/>
-        </Root>
-        <Logger name="nl.boukenijhuis" level="debug" additivity="true">
             <AppenderRef ref="FileAppender"/>
+        </Root>
+
+        <Logger name="nl.boukenijhuis" level="debug" additivity="false">
+            <AppenderRef ref="FileAppender"/>
+            <AppenderRef ref="ConsoleAppender"/>
         </Logger>
+
     </Loggers>
 </Configuration>
