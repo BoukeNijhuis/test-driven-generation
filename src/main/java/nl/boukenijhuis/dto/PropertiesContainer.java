@@ -82,6 +82,8 @@ public class PropertiesContainer {
         return switch (family) {
             case "chatgpt" -> "OPENAI_API_KEY";
             case "anthropic" -> "ANTHROPIC_API_KEY";
+            // using the nvidia cloud for deepseek right now
+            case "deepseek" -> "NVIDIA_API_KEY";
             default -> throw new RuntimeException(String.format("Cannot get api key for '%s', because it is an unknown family.", getFamily()));
         };
     }

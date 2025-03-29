@@ -3,6 +3,7 @@ package nl.boukenijhuis;
 import nl.boukenijhuis.assistants.AIAssistant;
 import nl.boukenijhuis.assistants.anthropic.Anthropic;
 import nl.boukenijhuis.assistants.chatgpt.ChatGpt;
+import nl.boukenijhuis.assistants.deepseek.Deepseek;
 import nl.boukenijhuis.assistants.ollama.Ollama;
 import nl.boukenijhuis.dto.CodeContainer;
 import nl.boukenijhuis.dto.InputContainer;
@@ -18,10 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static nl.boukenijhuis.Utils.addToClassLoader;
-import static nl.boukenijhuis.Utils.compileFiles;
-import static nl.boukenijhuis.Utils.createTemporaryFile;
-import static nl.boukenijhuis.Utils.determineProjectParentFilePath;
+import static nl.boukenijhuis.Utils.*;
 
 public class Generator {
 
@@ -60,6 +58,8 @@ public class Generator {
             aiAssistant = new ChatGpt(properties);
         } else if (family.equalsIgnoreCase("anthropic")) {
             aiAssistant = new Anthropic(properties);
+        } else if (family.equalsIgnoreCase("deepseek")) {
+            aiAssistant = new Deepseek(properties);
         } else {
             aiAssistant = new Ollama(properties);
         }
