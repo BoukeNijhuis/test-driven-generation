@@ -25,7 +25,8 @@ public record ChatGptResponse(
     public record Message(
             String role,
             String content,
-            String refusal) {
+            String refusal,
+            String[] annotations) {
     }
 
     public record Usage(
