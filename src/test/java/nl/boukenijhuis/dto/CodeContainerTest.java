@@ -8,9 +8,33 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class CodeContainerTest {
 
     @Test
+    void specialCaseWithTheWordClassInComments() throws ClassNameNotFoundException {
+        String input = """
+                package org.example.oddeven;
+                
+                /**
+                 * A class that provides functionality to check if a number is odd or even.
+                 */
+                public class OddEven {
+                
+                    /**
+                     * Determines if a number is even.
+                     *\s
+                     * @param number The number to check
+                     * @return true if the number is even, false otherwise
+                     */
+                    public boolean isEven(int number) {
+                        return number % 2 == 0;
+                    }
+                }
+                """;
+        testFileNameExtraction(input, "OddEven.java");
+    }
+
+    @Test
     void fileNameExtractionHappyFlow() throws ClassNameNotFoundException {
-        testFileNameExtraction("class HappyFlow{}", "HappyFlow.java");
         testFileNameExtraction("   class HappyFlow{}", "HappyFlow.java");
+        testFileNameExtraction("public class HappyFlow{}; class Ignore", "HappyFlow.java");
         testFileNameExtraction("public class HappyFlow{}", "HappyFlow.java");
         testFileNameExtraction(" public class HappyFlow{}", "HappyFlow.java");
         testFileNameExtraction("public class HappyFlow    {}", "HappyFlow.java");

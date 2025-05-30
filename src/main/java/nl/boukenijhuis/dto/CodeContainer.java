@@ -26,7 +26,7 @@ public final class CodeContainer {
     // TODO: first look for 'public class' and then for 'class
     private String extractClassName() throws ClassNameNotFoundException {
         // matches "public" (optional) followed by "class" and then the class name
-        String regex = "\\b(?:public\\s+)?class\\s+(\\w+)\\b";
+        String regex = "\\b(?:public\\s+)?class\\s+(\\w+)\\s*\\{";
         Matcher matcher = Pattern.compile(regex).matcher(content);
         if (matcher.find()) {
             return matcher.group(1);
